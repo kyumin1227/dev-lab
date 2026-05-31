@@ -10,17 +10,17 @@
       --surface: #1a1d27;
       --surface2: #242736;
       --border: #2e3148;
-      --primary: #7c6af7;
-      --primary-light: #a89cf8;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #f87171;
-      --blue: #60a5fa;
-      --orange: #fb923c;
-      --cyan: #22d3ee;
-      --text: #e2e8f0;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      --primary: #0ea5e9;
+      --primary-light: #38bdf8;
+      --green: #22c55e;
+      --yellow: #fbbf24;
+      --red: #f43f5e;
+      --blue: #6366f1;
+      --orange: #f97316;
+      --cyan: #2dd4bf;
+      --text: #f1f5f9;
+      --text-muted: #b0bbd0;
+      --text-dim: #7d8fa3;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,8 +43,10 @@
       top: 0; left: 0;
       height: 100vh;
       overflow-y: auto;
-      padding: 28px 0;
+      padding: 28px 0 0;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
     }
     .sidebar-logo {
       padding: 0 20px 24px;
@@ -337,6 +339,73 @@
       .arch { flex-direction: column; }
       .arch-arrow { flex-direction: row; min-width: auto; padding: 8px 0; border: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     }
+
+    /* ── 테마 토글 ── */
+    .theme-switch-wrap {
+      margin-top: auto; flex-shrink: 0;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .theme-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .theme-switch input { display: none; }
+    .theme-slider {
+      position: absolute; inset: 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .theme-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; left: 3px; top: 3px;
+      background: var(--primary); border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .theme-switch input:checked + .theme-slider { background: #ddd8ff; border-color: #a899f8; }
+    .theme-switch input:checked + .theme-slider::before { transform: translateX(22px); }
+    .theme-icon { font-size: 15px; line-height: 1; color: var(--text-muted); }
+
+    /* ── 라이트 모드 ── */
+    body.light {
+      --bg: #f0f2f7; --surface: #ffffff; --surface2: #e4e7f0;
+      --border: #cdd1de; --text: #111827; --text-muted: #374151; --text-dim: #6b7280;
+      --primary: #0284c7; --primary-light: #0369a1;
+      --green: #16a34a; --yellow: #d97706; --red: #dc2626;
+      --blue: #4f46e5; --orange: #ea580c; --cyan: #0d9488;
+    }
+    body.light .code-block { background: #dde0eb; }
+    body.light .code-block pre { background: #dde0eb; color: #111827; }
+    body.light .kw  { color: #6d28d9; }
+    body.light .fn  { color: #1d4ed8; }
+    body.light .str { color: #15803d; }
+    body.light .num { color: #c2410c; }
+    body.light .cmt { color: #6b7280; font-style: italic; }
+    body.light .tbl { color: #0891b2; }
+    body.light .col { color: #b45309; }
+    body.light .op  { color: #b91c1c; }
+
+    /* 라이트 모드 전용 */
+    body.light .hero h1 {
+      background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #000000;
+      color: #000000;
+    }
+
+    /* 섹션 1 — 아키텍처 다이어그램 */
+    body.light .arch-col.frontend  { background: rgba(109,40,217,0.10); }
+    body.light .arch-col.backend   { background: rgba(37,99,235,0.12); }
+    body.light .arch-col.database  { background: rgba(22,163,74,0.12); }
+    body.light .tag-fe { color: #7c3aed; }
+    body.light .tag-be { color: #2563eb; }
+    body.light .tag-db { color: #16a34a; }
+
+    /* 섹션 2 — 요청 흐름 */
+    body.light .flow-step.fe { border-left-color: #7c3aed; }
+    body.light .flow-step.be { border-left-color: #2563eb; }
+    body.light .flow-step.db { border-left-color: #16a34a; }
+    body.light .fe .flow-num { background: #7c3aed; color: #fff; }
+    body.light .be .flow-num { background: #2563eb; color: #fff; }
+    body.light .db .flow-num { background: #16a34a; color: #fff; }
+    body.light .fe .flow-tag { background: rgba(109,40,217,0.12); color: #7c3aed; }
+    body.light .be .flow-tag { background: rgba(37,99,235,0.12); color: #2563eb; }
+    body.light .db .flow-tag { background: rgba(22,163,74,0.12); color: #16a34a; }
   </style>
 </head>
 <body>
@@ -367,6 +436,14 @@
       <a href="#s9">⑪ 설계 원칙 정리</a>
       <a href="#s-norm">⑫ 정규화 기초</a>
     </nav>
+    <div class="theme-switch-wrap">
+      <span class="theme-icon">🌙</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon">☀️</span>
+    </div>
   </aside>
 
   <!-- ── 메인 ── -->
@@ -1484,6 +1561,21 @@ id → user_id → user_email (이행 종속)</div>
       document.querySelector(a.getAttribute('href'))
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+  });
+
+  const themeToggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    themeToggle.checked = true;
+  }
+  themeToggle.addEventListener('change', () => {
+    if (themeToggle.checked) {
+      document.body.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.body.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    }
   });
 </script>
 </body>
