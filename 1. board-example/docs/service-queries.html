@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서비스 실사용 쿼리 — 게시판으로 배우기</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #242736;
+      --border: #2e3148;
+      --primary: #0ea5e9;
+      --primary-light: #38bdf8;
+      --green: #22c55e;
+      --yellow: #fbbf24;
+      --red: #f43f5e;
+      --blue: #6366f1;
+      --orange: #f97316;
+      --cyan: #2dd4bf;
+      --text: #f1f5f9;
+      --text-muted: #b0bbd0;
+      --text-dim: #7d8fa3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.7;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      width: 256px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 0 0;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 20px 20px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .sidebar-back:hover { color: var(--primary-light); }
+    .sidebar-logo {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo .tag {
+      font-size: 11px; color: var(--primary-light);
+      text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+    }
+    .sidebar-logo h2 { font-size: 15px; margin-top: 4px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px; font-size: 13px; color: var(--text-muted);
+      text-decoration: none; border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      color: var(--text); background: var(--surface2); border-left-color: var(--primary);
+    }
+    .sidebar nav .sec {
+      font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 1px; padding: 16px 20px 6px; font-weight: 600;
+    }
+
+    /* ── 메인 ── */
+    .main { margin-left: 256px; max-width: 900px; padding: 48px 48px 120px; }
+
+    /* ── 섹션 ── */
+    .section { margin-bottom: 80px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-icon.auth    { background: rgba(124,106,247,0.2); }
+    .section-icon.posts   { background: rgba(34,211,238,0.15); }
+    .section-icon.comments{ background: rgba(74,222,128,0.15); }
+    .section-header h2 { font-size: 22px; font-weight: 700; }
+    .section-header .sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    p { color: var(--text-muted); margin-bottom: 14px; font-size: 14.5px; }
+
+    /* ── 히어로 ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(124,106,247,0.15), rgba(34,211,238,0.08));
+      border: 1px solid rgba(124,106,247,0.3);
+      border-radius: 12px; padding: 36px 40px; margin-bottom: 56px;
+    }
+    .hero .tag {
+      font-size: 11px; color: var(--primary-light);
+      text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;
+    }
+    .hero h1 {
+      font-size: 32px; font-weight: 800; margin: 10px 0 12px;
+      background: linear-gradient(135deg, #fff 40%, var(--primary-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { font-size: 15px; max-width: 560px; margin: 0; }
+    .hero .chips { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-muted);
+    }
+
+    /* ── 쿼리 카드 ── */
+    .query-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 24px; overflow: hidden;
+    }
+    .query-header {
+      padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .query-num {
+      width: 28px; height: 28px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; color: white;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .q-auth    .query-num { background: #7c3aed; }
+    .q-posts   .query-num { background: #0891b2; }
+    .q-comments .query-num { background: #15803d; }
+    .query-meta { flex: 1; }
+    .query-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .query-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+    .query-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+    /* ── 뱃지 ── */
+    .badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 4px;
+      font-weight: 600; letter-spacing: 0.3px;
+    }
+    .badge-get    { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .badge-post   { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .badge-delete { background: rgba(244,63,94,0.15);  color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+    .badge-select { background: rgba(14,165,233,0.15); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
+    .badge-insert { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+    .badge-del-sql { background: rgba(244,63,94,0.12); color: #f87171; border: 1px solid rgba(244,63,94,0.25); }
+    .badge-join   { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+    .badge-group  { background: rgba(45,212,191,0.15); color: #2dd4bf; border: 1px solid rgba(45,212,191,0.3); }
+    .badge-where  { background: rgba(124,106,247,0.15); color: #c4b5fd; border: 1px solid rgba(124,106,247,0.3); }
+
+    /* ── 코드 블록 ── */
+    .code-block {
+      background: #0d1117; border-top: 1px solid var(--border);
+    }
+    .code-header {
+      background: var(--surface2); padding: 8px 16px; font-size: 12px;
+      color: var(--text-dim); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-block pre {
+      padding: 18px 20px; overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13.5px; line-height: 1.75; margin: 0;
+    }
+    .kw  { color: #c792ea; font-weight: 600; }
+    .fn  { color: #82aaff; }
+    .str { color: #4ade80; }
+    .num { color: #fb923c; }
+    .cmt { color: #64748b; font-style: italic; }
+    .tbl { color: #22d3ee; }
+    .col { color: #facc15; }
+    .op  { color: #f87171; }
+    .ph  { color: #fb923c; font-style: italic; } /* placeholder ? */
+
+    /* ── 설명 영역 ── */
+    .query-explain {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+    .explain-title {
+      font-size: 12px; font-weight: 700; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
+    }
+    .clause-list { display: flex; flex-direction: column; gap: 6px; }
+    .clause-item {
+      display: flex; gap: 10px; align-items: flex-start; font-size: 13px;
+    }
+    .clause-kw {
+      font-family: monospace; font-size: 12px; font-weight: 700;
+      padding: 1px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+      background: var(--surface2); color: var(--primary-light);
+      border: 1px solid var(--border);
+    }
+    .clause-text { color: var(--text-muted); line-height: 1.5; }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 8px; padding: 12px 16px; margin: 12px 20px 16px;
+      font-size: 13px; display: flex; gap: 10px;
+    }
+    .callout-tip  { background: rgba(74,222,128,0.08); border-left: 3px solid var(--green); }
+    .callout-warn { background: rgba(250,204,21,0.08); border-left: 3px solid var(--yellow); }
+    .callout-info { background: rgba(96,165,250,0.08); border-left: 3px solid var(--blue); }
+    .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .callout p { margin: 0; font-size: 13px; }
+    .callout strong { color: var(--text); }
+
+    /* ── 플로우 태그 ── */
+    .flow-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .flow-tag.fe { background: rgba(124,106,247,0.15); color: var(--primary-light); }
+    .flow-tag.be { background: rgba(34,211,238,0.12); color: var(--cyan); }
+    .flow-tag.db { background: rgba(74,222,128,0.12); color: var(--green); }
+
+    /* ── 개요 맵 ── */
+    .overview-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px; margin: 24px 0;
+    }
+    .overview-col {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .overview-col-head {
+      padding: 10px 14px; font-size: 13px; font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .overview-col-head.auth    { background: rgba(124,106,247,0.12); }
+    .overview-col-head.posts   { background: rgba(34,211,238,0.10); }
+    .overview-col-head.comments{ background: rgba(74,222,128,0.10); }
+    .overview-item {
+      padding: 8px 14px; font-size: 12px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center;
+    }
+    .overview-item:last-child { border-bottom: none; }
+    .overview-item .dot-icon { font-size: 10px; }
+
+    code {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 6px; font-family: monospace; font-size: 13px; color: var(--cyan);
+    }
+
+    /* ── 테마 토글 ── */
+    .theme-switch-wrap {
+      margin-top: auto; flex-shrink: 0;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .theme-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .theme-switch input { display: none; }
+    .theme-slider {
+      position: absolute; inset: 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .theme-slider::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; left: 3px; top: 3px;
+      background: var(--primary); border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .theme-switch input:checked + .theme-slider { background: #ddd8ff; border-color: #a899f8; }
+    .theme-switch input:checked + .theme-slider::before { transform: translateX(22px); }
+    .theme-icon { font-size: 15px; line-height: 1; color: var(--text-muted); }
+
+    /* ── 라이트 모드 ── */
+    body.light {
+      --bg: #f0f2f7; --surface: #ffffff; --surface2: #e4e7f0;
+      --border: #cdd1de; --text: #111827; --text-muted: #374151; --text-dim: #6b7280;
+      --primary: #0284c7; --primary-light: #0369a1;
+      --green: #16a34a; --yellow: #d97706; --red: #dc2626;
+      --blue: #4f46e5; --orange: #ea580c; --cyan: #0d9488;
+    }
+    body.light .code-block { background: #dde0eb; }
+    body.light .code-block pre { background: #dde0eb; color: #111827; }
+    body.light .kw  { color: #6d28d9; }
+    body.light .fn  { color: #1d4ed8; }
+    body.light .str { color: #15803d; }
+    body.light .num { color: #c2410c; }
+    body.light .cmt { color: #6b7280; }
+    body.light .tbl { color: #0891b2; }
+    body.light .col { color: #b45309; }
+    body.light .op  { color: #b91c1c; }
+    body.light .ph  { color: #c2410c; }
+    body.light .hero h1 {
+      background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #000;
+    }
+    body.light .query-explain { background: rgba(0,0,0,0.02); }
+
+    /* ── 반응형 ── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 24px 20px 80px; }
+      .overview-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar">
+    <a href="../index.html" class="sidebar-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      허브로 돌아가기
+    </a>
+    <div class="sidebar-logo">
+      <div class="tag">강의 교안</div>
+      <h2>서비스 실사용 쿼리</h2>
+    </div>
+    <nav>
+      <div class="sec">개요</div>
+      <a href="#overview">쿼리 전체 목록</a>
+
+      <div class="sec">인증 (auth.js)</div>
+      <a href="#q1">① 아이디 중복 확인</a>
+      <a href="#q2">② 회원가입 INSERT</a>
+      <a href="#q3">③ 로그인 유저 조회</a>
+
+      <div class="sec">게시글 (posts.js)</div>
+      <a href="#q4">④ 게시글 목록 조회</a>
+      <a href="#q5">⑤ 게시글 상세 조회</a>
+      <a href="#q6">⑥ 게시글 작성</a>
+      <a href="#q7">⑦ 게시글 권한 확인</a>
+      <a href="#q8">⑧ 댓글 일괄 삭제</a>
+      <a href="#q9">⑨ 게시글 삭제</a>
+
+      <div class="sec">댓글 (comments.js)</div>
+      <a href="#q10">⑩ 댓글 목록 조회</a>
+      <a href="#q11">⑪ 게시글 존재 확인</a>
+      <a href="#q12">⑫ 댓글 작성</a>
+      <a href="#q13">⑬ 댓글 권한 확인</a>
+      <a href="#q14">⑭ 댓글 삭제</a>
+    </nav>
+    <div class="theme-switch-wrap">
+      <span class="theme-icon">🌙</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon">☀️</span>
+    </div>
+  </aside>
+
+  <!-- ── 메인 ── -->
+  <main class="main">
+
+    <!-- 히어로 -->
+    <div class="hero">
+      <div class="tag">SQL in Practice</div>
+      <h1>게시판이 실제로<br>사용하는 쿼리 14개</h1>
+      <p>우리가 만든 게시판 서비스(<code>auth.js</code>, <code>posts.js</code>, <code>comments.js</code>)에
+         실제로 작성된 SQL 쿼리를 하나씩 뜯어봅니다.
+         어떤 상황에서 실행되는지, 각 절이 무슨 역할을 하는지 이해합니다.</p>
+      <div class="chips">
+        <span class="chip">SELECT</span>
+        <span class="chip">INSERT</span>
+        <span class="chip">DELETE</span>
+        <span class="chip">JOIN</span>
+        <span class="chip">GROUP BY</span>
+        <span class="chip">WHERE</span>
+        <span class="chip">ORDER BY</span>
+      </div>
+    </div>
+
+
+    <!-- ── 개요 ── -->
+    <div class="section" id="overview">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(14,165,233,0.15); font-size:20px">📋</div>
+        <div>
+          <h2>쿼리 전체 목록</h2>
+          <div class="sub">3개 파일, 14개 쿼리 — API 요청 하나가 1~2개 쿼리를 실행한다</div>
+        </div>
+      </div>
+
+      <p>게시판 서비스는 크게 세 라우터 파일로 나뉘고, 각 파일에서 아래 쿼리들이 실행됩니다.</p>
+
+      <div class="overview-grid">
+        <div class="overview-col">
+          <div class="overview-col-head auth">🔐 auth.js <span style="font-size:11px; font-weight:400; color:var(--text-dim); margin-left:4px">3개</span></div>
+          <div class="overview-item"><span class="dot-icon">①</span> SELECT — 아이디 중복 확인</div>
+          <div class="overview-item"><span class="dot-icon">②</span> INSERT — 회원가입</div>
+          <div class="overview-item"><span class="dot-icon">③</span> SELECT — 로그인</div>
+        </div>
+        <div class="overview-col">
+          <div class="overview-col-head posts">📝 posts.js <span style="font-size:11px; font-weight:400; color:var(--text-dim); margin-left:4px">6개</span></div>
+          <div class="overview-item"><span class="dot-icon">④</span> SELECT + JOIN — 목록</div>
+          <div class="overview-item"><span class="dot-icon">⑤</span> SELECT + JOIN — 상세</div>
+          <div class="overview-item"><span class="dot-icon">⑥</span> INSERT — 게시글 작성</div>
+          <div class="overview-item"><span class="dot-icon">⑦</span> SELECT — 권한 확인</div>
+          <div class="overview-item"><span class="dot-icon">⑧</span> DELETE — 댓글 일괄 삭제</div>
+          <div class="overview-item"><span class="dot-icon">⑨</span> DELETE — 게시글 삭제</div>
+        </div>
+        <div class="overview-col">
+          <div class="overview-col-head comments">💬 comments.js <span style="font-size:11px; font-weight:400; color:var(--text-dim); margin-left:4px">5개</span></div>
+          <div class="overview-item"><span class="dot-icon">⑩</span> SELECT + JOIN — 댓글 목록</div>
+          <div class="overview-item"><span class="dot-icon">⑪</span> SELECT — 게시글 존재 확인</div>
+          <div class="overview-item"><span class="dot-icon">⑫</span> INSERT — 댓글 작성</div>
+          <div class="overview-item"><span class="dot-icon">⑬</span> SELECT — 권한 확인</div>
+          <div class="overview-item"><span class="dot-icon">⑭</span> DELETE — 댓글 삭제</div>
+        </div>
+      </div>
+
+      <div class="callout callout-info" style="margin: 0">
+        <div class="callout-icon">💡</div>
+        <p><strong>읽는 방법:</strong> 각 쿼리 카드에서 <span style="color:var(--green)">API 경로</span>와 <span style="color:var(--yellow)">SQL 종류</span> 뱃지로 어떤 요청이 어떤 쿼리를 실행하는지 먼저 확인하세요. 그 다음 코드 블록의 각 절(clause)이 무엇을 의미하는지 설명 영역에서 확인합니다.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         인증 (auth.js)
+    ══════════════════════════════════════ -->
+    <div class="section" id="s-auth">
+      <div class="section-header">
+        <div class="section-icon auth">🔐</div>
+        <div>
+          <h2>인증 — auth.js</h2>
+          <div class="sub">회원가입·로그인 요청 처리 / routes/auth.js</div>
+        </div>
+      </div>
+
+      <!-- Q1 -->
+      <div class="query-card q-auth" id="q1">
+        <div class="query-header">
+          <div class="query-num">1</div>
+          <div class="query-meta">
+            <div class="query-title">아이디 중복 확인</div>
+            <div class="query-desc">회원가입 시 입력한 아이디가 이미 존재하는지 먼저 확인합니다. 이미 있으면 가입을 막고 409 에러를 반환합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/auth/register</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/auth.js — POST /register
+          </div>
+          <pre><span class="kw">SELECT</span> <span class="col">id</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? 자리에 사용자가 입력한 아이디가 들어감</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">SELECT id</span>
+              <span class="clause-text">존재 여부만 확인하면 되므로 <code>id</code> 하나만 가져옵니다. <code>SELECT *</code>는 불필요한 데이터(비밀번호 등)까지 읽으므로 피합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">FROM users</span>
+              <span class="clause-text">유저 테이블에서 조회합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">WHERE</span>
+              <span class="clause-text">특정 <code>username</code>을 가진 행만 필터링합니다. <code>?</code>는 플레이스홀더로, 실제 값은 코드에서 안전하게 바인딩됩니다 (SQL 인젝션 방지).</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-tip" style="margin-top:0">
+          <div class="callout-icon">💡</div>
+          <p><strong>결과가 있으면</strong> 이미 사용 중인 아이디 → 409 반환. <strong>결과가 없으면</strong> 다음 단계(INSERT)로 진행합니다.</p>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="query-card q-auth" id="q2">
+        <div class="query-header">
+          <div class="query-num">2</div>
+          <div class="query-meta">
+            <div class="query-title">회원가입 — 유저 삽입</div>
+            <div class="query-desc">중복 확인을 통과한 뒤, 해시된 비밀번호와 함께 새 유저를 저장합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/auth/register</span>
+              <span class="badge badge-insert">INSERT</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/auth.js — POST /register
+          </div>
+          <pre><span class="kw">INSERT INTO</span> <span class="tbl">users</span> (<span class="col">username</span>, <span class="col">password</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>)     <span class="cmt">-- ? : 아이디, bcrypt 해시된 비밀번호</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">INSERT INTO</span>
+              <span class="clause-text">지정한 테이블에 새 행을 추가합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">(username, password)</span>
+              <span class="clause-text">값을 넣을 컬럼을 명시합니다. <code>id</code>와 <code>created_at</code>은 명시하지 않아도 DB가 자동으로 채웁니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">VALUES</span>
+              <span class="clause-text">삽입할 실제 값을 순서대로 지정합니다. <code>password</code>는 코드에서 <code>bcrypt.hashSync()</code>로 해시한 뒤 전달됩니다.</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-warn" style="margin-top:0">
+          <div class="callout-icon">⚠️</div>
+          <p><strong>비밀번호는 절대 평문으로 저장하지 않습니다.</strong> <code>bcrypt</code>로 해싱한 값이 DB에 저장됩니다. 해시는 단방향이라 원본 비밀번호를 역산할 수 없습니다.</p>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="query-card q-auth" id="q3">
+        <div class="query-header">
+          <div class="query-num">3</div>
+          <div class="query-meta">
+            <div class="query-title">로그인 — 유저 조회</div>
+            <div class="query-desc">아이디로 유저를 찾아 비밀번호 해시를 가져옵니다. 이후 코드에서 입력 비밀번호와 해시를 비교해 인증합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/auth/login</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/auth.js — POST /login
+          </div>
+          <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="ph">?</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">SELECT *</span>
+              <span class="clause-text">유저의 모든 컬럼을 가져옵니다. 비밀번호 해시 비교와 JWT 토큰 발급에 <code>id</code>, <code>username</code>, <code>password</code> 모두 필요하기 때문입니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">WHERE</span>
+              <span class="clause-text">입력한 아이디와 일치하는 유저 한 명만 가져옵니다. <code>username</code>은 <code>UNIQUE</code> 제약이 있어 결과는 항상 0개 또는 1개입니다.</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-tip" style="margin-top:0">
+          <div class="callout-icon">💡</div>
+          <p>쿼리 결과가 없으면 → 존재하지 않는 아이디. 결과가 있어도 <code>bcrypt.compareSync()</code>가 false면 → 비밀번호 불일치. 둘 다 401로 동일하게 처리합니다 (어느 쪽이 틀렸는지 알려주지 않는 것이 보안상 올바릅니다).</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         게시글 (posts.js)
+    ══════════════════════════════════════ -->
+    <div class="section" id="s-posts">
+      <div class="section-header">
+        <div class="section-icon posts">📝</div>
+        <div>
+          <h2>게시글 — posts.js</h2>
+          <div class="sub">목록·상세 조회, 작성, 삭제 / routes/posts.js</div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="query-card q-posts" id="q4">
+        <div class="query-header">
+          <div class="query-num">4</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 목록 조회</div>
+            <div class="query-desc">메인 화면에 표시하는 전체 게시글 목록입니다. 각 게시글의 작성자 이름과 댓글 수를 함께 가져옵니다. 서비스에서 가장 복잡한 쿼리입니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-get">GET /api/posts</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-join">JOIN × 2</span>
+              <span class="badge badge-group">GROUP BY</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — GET /
+          </div>
+          <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">SELECT 컬럼 지정</span>
+              <span class="clause-text">필요한 컬럼만 명시적으로 선택합니다. <code>posts.id</code>처럼 <code>테이블.컬럼</code> 형식을 쓰는 이유는 두 테이블에 같은 이름의 컬럼(<code>id</code>, <code>created_at</code>)이 있어 어느 테이블의 것인지 명확히 해야 하기 때문입니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">COUNT(comments.id)</span>
+              <span class="clause-text">각 게시글에 달린 댓글 수를 셉니다. <code>COUNT(*)</code>가 아닌 <code>COUNT(comments.id)</code>를 쓰는 이유: 댓글이 0개인 게시글은 LEFT JOIN 결과의 <code>comments.id</code>가 NULL이 되는데, <code>COUNT</code>는 NULL을 세지 않아 정확히 0을 반환합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">JOIN users</span>
+              <span class="clause-text">posts 테이블에는 <code>user_id</code>(숫자)만 있고 작성자 이름이 없습니다. INNER JOIN으로 users 테이블을 연결해 <code>username</code>을 가져옵니다. 작성자가 반드시 존재하므로 INNER JOIN을 씁니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">LEFT JOIN comments</span>
+              <span class="clause-text">댓글이 하나도 없는 게시글도 목록에 나와야 하므로 LEFT JOIN을 씁니다. INNER JOIN을 쓰면 댓글이 없는 게시글은 결과에서 제외됩니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">GROUP BY posts.id</span>
+              <span class="clause-text">LEFT JOIN으로 댓글 수만큼 행이 늘어나므로(게시글 1개에 댓글 3개면 3행), <code>GROUP BY</code>로 게시글 기준으로 다시 묶습니다. 이 과정에서 <code>COUNT()</code>가 각 그룹의 댓글 수를 계산합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">ORDER BY … DESC</span>
+              <span class="clause-text">최신 게시글이 위에 오도록 내림차순 정렬합니다.</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin-top:0">
+          <div class="callout-icon">🔍</div>
+          <p><strong>LEFT JOIN vs INNER JOIN:</strong> 댓글이 없는 게시글을 포함하려면 LEFT JOIN이 필수입니다. INNER JOIN은 양쪽 테이블에 모두 매칭되는 행만 결과에 포함합니다.</p>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="query-card q-posts" id="q5">
+        <div class="query-header">
+          <div class="query-num">5</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 상세 조회</div>
+            <div class="query-desc">특정 게시글 하나를 ID로 조회합니다. 상세 페이지 진입 시 실행됩니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-get">GET /api/posts/:id</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-join">JOIN</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — GET /:id
+          </div>
+          <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="op">*</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : URL 파라미터 :id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">posts.*</span>
+              <span class="clause-text">posts 테이블의 모든 컬럼을 가져옵니다. 상세 페이지는 제목·내용·작성일을 모두 보여줘야 합니다. <code>users.*</code>가 아닌 <code>posts.*</code>만 와일드카드를 쓰는 이유는 users의 <code>password</code>가 포함되는 것을 막기 위해서입니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">JOIN users</span>
+              <span class="clause-text">작성자 이름을 가져오기 위해 JOIN합니다. Q4와 같은 원리입니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">WHERE posts.id = ?</span>
+              <span class="clause-text">URL의 <code>:id</code> 파라미터로 특정 게시글 하나만 필터링합니다. <code>id</code>는 PK(기본키)이므로 결과는 0개 또는 1개입니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="query-card q-posts" id="q6">
+        <div class="query-header">
+          <div class="query-num">6</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 작성</div>
+            <div class="query-desc">로그인한 사용자가 새 게시글을 작성할 때 실행됩니다. JWT 토큰 검증 후에만 실행됩니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/posts</span>
+              <span class="badge badge-insert">INSERT</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — POST /
+          </div>
+          <pre><span class="kw">INSERT INTO</span> <span class="tbl">posts</span> (<span class="col">title</span>, <span class="col">content</span>, <span class="col">user_id</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>, <span class="ph">?</span>)   <span class="cmt">-- ? : 제목, 내용, 로그인한 유저의 id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">(title, content, user_id)</span>
+              <span class="clause-text">세 컬럼만 명시합니다. <code>id</code>는 AUTOINCREMENT, <code>created_at</code>은 DEFAULT CURRENT_TIMESTAMP로 DB가 자동 채웁니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">user_id = req.user.id</span>
+              <span class="clause-text">세 번째 <code>?</code>에는 JWT 토큰에서 추출한 로그인 유저의 ID가 들어갑니다. 프론트가 직접 user_id를 보내는 게 아니라, 서버가 토큰에서 추출하기 때문에 위변조가 불가능합니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="query-card q-posts" id="q7">
+        <div class="query-header">
+          <div class="query-num">7</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 삭제 전 — 존재·권한 확인</div>
+            <div class="query-desc">삭제 요청이 오면 먼저 게시글이 존재하는지, 요청한 사람이 작성자인지 확인합니다. 이 쿼리로 확인 후 실제 삭제 쿼리를 실행합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-delete">DELETE /api/posts/:id</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — DELETE /:id (1단계: 확인)
+          </div>
+          <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL 파라미터 :id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명 + 코드 연계</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">결과 없음</span>
+              <span class="clause-text">게시글이 존재하지 않음 → 코드에서 404 반환.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">post.user_id 비교</span>
+              <span class="clause-text">가져온 <code>post.user_id</code>와 JWT 토큰의 <code>req.user.id</code>를 코드에서 비교합니다. 다르면 403 반환. 이 로직은 SQL이 아닌 JavaScript에서 처리합니다.</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-warn" style="margin-top:0">
+          <div class="callout-icon">⚠️</div>
+          <p><strong>권한 확인을 절대 생략하면 안 됩니다.</strong> 확인 없이 바로 DELETE를 실행하면 누구든 다른 사람의 게시글을 삭제할 수 있습니다.</p>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="query-card q-posts" id="q8">
+        <div class="query-header">
+          <div class="query-num">8</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 삭제 시 — 댓글 먼저 삭제</div>
+            <div class="query-desc">게시글에 달린 댓글은 posts 테이블을 참조합니다. 게시글을 먼저 지우면 참조 무결성 오류가 나므로, 댓글을 먼저 삭제합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-delete">DELETE /api/posts/:id</span>
+              <span class="badge badge-del-sql">DELETE</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — DELETE /:id (2단계: 댓글 삭제)
+          </div>
+          <pre><span class="kw">DELETE FROM</span> <span class="tbl">comments</span>
+<span class="kw">WHERE</span>       <span class="col">post_id</span> <span class="op">=</span> <span class="ph">?</span>      <span class="cmt">-- ? : 삭제할 게시글 id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">DELETE FROM comments</span>
+              <span class="clause-text">posts 테이블이 아닌 <code>comments</code> 테이블의 행을 삭제합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">WHERE post_id = ?</span>
+              <span class="clause-text">해당 게시글에 달린 댓글만 삭제합니다. WHERE 없이 실행하면 전체 댓글이 삭제되므로 반드시 필요합니다.</span>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-info" style="margin-top:0">
+          <div class="callout-icon">💡</div>
+          <p><strong>실무에서는 CASCADE로 자동화합니다.</strong> <code>FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE</code>를 선언하면 게시글 삭제 시 댓글이 자동으로 함께 삭제됩니다. 이 서비스는 수동으로 처리하고 있습니다.</p>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="query-card q-posts" id="q9">
+        <div class="query-header">
+          <div class="query-num">9</div>
+          <div class="query-meta">
+            <div class="query-title">게시글 삭제</div>
+            <div class="query-desc">댓글을 먼저 지운 뒤 실제 게시글을 삭제합니다. Q8 → Q9 순서로 실행됩니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-delete">DELETE /api/posts/:id</span>
+              <span class="badge badge-del-sql">DELETE</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/posts.js — DELETE /:id (3단계: 게시글 삭제)
+          </div>
+          <pre><span class="kw">DELETE FROM</span> <span class="tbl">posts</span>
+<span class="kw">WHERE</span>       <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : 삭제할 게시글 id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">실행 순서 정리</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">① Q7</span>
+              <span class="clause-text">게시글 존재·권한 확인 (SELECT)</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">② Q8</span>
+              <span class="clause-text">해당 게시글의 댓글 전체 삭제 (DELETE FROM comments)</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">③ Q9</span>
+              <span class="clause-text">게시글 삭제 (DELETE FROM posts) — 이 순서여야 외래키 오류 없이 삭제됩니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         댓글 (comments.js)
+    ══════════════════════════════════════ -->
+    <div class="section" id="s-comments">
+      <div class="section-header">
+        <div class="section-icon comments">💬</div>
+        <div>
+          <h2>댓글 — comments.js</h2>
+          <div class="sub">댓글 목록·작성·삭제 / routes/comments.js</div>
+        </div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="query-card q-comments" id="q10">
+        <div class="query-header">
+          <div class="query-num">10</div>
+          <div class="query-meta">
+            <div class="query-title">댓글 목록 조회</div>
+            <div class="query-desc">게시글 상세 페이지에서 해당 게시글의 댓글 전체를 불러옵니다. 작성자 이름과 함께 오래된 순으로 정렬합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-get">GET /api/posts/:postId/comments</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-join">JOIN</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/comments.js — GET /
+          </div>
+          <pre><span class="kw">SELECT</span>   <span class="tbl">comments</span>.<span class="op">*</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="ph">?</span>    <span class="cmt">-- ? : URL 파라미터 :postId</span>
+<span class="kw">ORDER BY</span> <span class="tbl">comments</span>.<span class="col">created_at</span> <span class="kw">ASC</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">comments.*</span>
+              <span class="clause-text">댓글의 모든 컬럼을 가져옵니다. Q5(posts.*)와 같은 원리로 users.*는 사용하지 않아 비밀번호가 노출되지 않습니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">JOIN users</span>
+              <span class="clause-text">댓글 테이블에는 <code>user_id</code>만 있으므로 JOIN으로 작성자 이름을 가져옵니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">WHERE comments.post_id = ?</span>
+              <span class="clause-text">해당 게시글의 댓글만 필터링합니다. 이 조건이 없으면 전체 댓글이 반환됩니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">ORDER BY … ASC</span>
+              <span class="clause-text">댓글은 먼저 달린 것이 위에 오도록 오름차순 정렬합니다. 게시글 목록(Q4)과 반대 방향입니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q11 -->
+      <div class="query-card q-comments" id="q11">
+        <div class="query-header">
+          <div class="query-num">11</div>
+          <div class="query-meta">
+            <div class="query-title">댓글 작성 전 — 게시글 존재 확인</div>
+            <div class="query-desc">댓글을 작성하기 전에 해당 게시글이 실제로 존재하는지 확인합니다. 삭제된 게시글에 댓글이 달리는 것을 막습니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/posts/:postId/comments</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/comments.js — POST / (1단계: 확인)
+          </div>
+          <pre><span class="kw">SELECT</span> <span class="col">id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL 파라미터 :postId</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">SELECT id</span>
+              <span class="clause-text">Q1과 같은 패턴입니다. 존재 여부만 확인하므로 <code>id</code> 하나만 가져옵니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">결과 없음 → 404</span>
+              <span class="clause-text">게시글이 없으면 404를 반환하고 INSERT를 실행하지 않습니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q12 -->
+      <div class="query-card q-comments" id="q12">
+        <div class="query-header">
+          <div class="query-num">12</div>
+          <div class="query-meta">
+            <div class="query-title">댓글 작성</div>
+            <div class="query-desc">게시글 존재를 확인한 뒤 댓글을 저장합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-post">POST /api/posts/:postId/comments</span>
+              <span class="badge badge-insert">INSERT</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/comments.js — POST / (2단계: 삽입)
+          </div>
+          <pre><span class="kw">INSERT INTO</span> <span class="tbl">comments</span> (<span class="col">content</span>, <span class="col">post_id</span>, <span class="col">user_id</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>, <span class="ph">?</span>)   <span class="cmt">-- ? : 댓글 내용, 게시글 id, 로그인 유저 id</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">post_id</span>
+              <span class="clause-text">URL 파라미터 <code>:postId</code>에서 가져옵니다. 어느 게시글의 댓글인지 외래키로 연결합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">user_id</span>
+              <span class="clause-text">Q6(게시글 작성)과 동일하게 JWT 토큰에서 추출한 <code>req.user.id</code>가 들어갑니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q13 -->
+      <div class="query-card q-comments" id="q13">
+        <div class="query-header">
+          <div class="query-num">13</div>
+          <div class="query-meta">
+            <div class="query-title">댓글 삭제 전 — 존재·권한 확인</div>
+            <div class="query-desc">Q7(게시글 삭제 전 확인)과 동일한 패턴입니다. 댓글이 존재하는지, 요청자가 작성자인지 확인합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-delete">DELETE /api/posts/:postId/comments/:commentId</span>
+              <span class="badge badge-select">SELECT</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/comments.js — DELETE /:commentId (1단계: 확인)
+          </div>
+          <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL 파라미터 :commentId</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">각 절 설명</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">결과 없음 → 404</span>
+              <span class="clause-text">댓글이 이미 삭제됐거나 없을 때 404 반환.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">comment.user_id 비교</span>
+              <span class="clause-text">가져온 <code>comment.user_id</code>와 <code>req.user.id</code>를 JavaScript에서 비교합니다. 다르면 403 반환.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q14 -->
+      <div class="query-card q-comments" id="q14">
+        <div class="query-header">
+          <div class="query-num">14</div>
+          <div class="query-meta">
+            <div class="query-title">댓글 삭제</div>
+            <div class="query-desc">권한 확인 후 댓글 하나를 삭제합니다. 게시글 삭제(Q8~Q9)와 달리 댓글은 다른 테이블을 참조하지 않으므로 한 번에 삭제 가능합니다.</div>
+            <div class="query-badges">
+              <span class="badge badge-delete">DELETE /api/posts/:postId/comments/:commentId</span>
+              <span class="badge badge-del-sql">DELETE</span>
+              <span class="badge badge-where">WHERE</span>
+            </div>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <div class="dot" style="background:#ff5f57"></div>
+            <div class="dot" style="background:#febc2e"></div>
+            <div class="dot" style="background:#28c840"></div>
+            routes/comments.js — DELETE /:commentId (2단계: 삭제)
+          </div>
+          <pre><span class="kw">DELETE FROM</span> <span class="tbl">comments</span>
+<span class="kw">WHERE</span>       <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : URL 파라미터 :commentId</span></pre>
+        </div>
+        <div class="query-explain">
+          <div class="explain-title">게시글 삭제 vs 댓글 삭제 비교</div>
+          <div class="clause-list">
+            <div class="clause-item">
+              <span class="clause-kw">게시글 삭제</span>
+              <span class="clause-text">2단계 필요 — 댓글(자식)을 먼저 지우고 게시글(부모)을 지워야 합니다.</span>
+            </div>
+            <div class="clause-item">
+              <span class="clause-kw">댓글 삭제</span>
+              <span class="clause-text">1단계로 끝 — 댓글은 다른 테이블이 참조하지 않으므로 바로 삭제 가능합니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('change', () => {
+    document.body.classList.toggle('light', toggle.checked);
+  });
+
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -48,6 +48,15 @@
       display: flex;
       flex-direction: column;
     }
+    .sidebar-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 20px 20px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .sidebar-back:hover { color: var(--primary-light); }
     .sidebar-logo {
       padding: 0 20px 24px;
       border-bottom: 1px solid var(--border);
@@ -413,6 +422,10 @@
 
   <!-- ── 사이드바 ── -->
   <aside class="sidebar">
+    <a href="../index.html" class="sidebar-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      허브로 돌아가기
+    </a>
     <div class="sidebar-logo">
       <div class="tag">강의 교안</div>
       <h2>데이터베이스 설계</h2>

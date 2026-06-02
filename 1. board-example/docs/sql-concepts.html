@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL 쿼리 작성법 — 게시판으로 배우기</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #242736;
+      --border: #2e3148;
+      --primary: #0ea5e9;
+      --primary-light: #38bdf8;
+      --green: #22c55e;
+      --yellow: #fbbf24;
+      --red: #f43f5e;
+      --blue: #6366f1;
+      --orange: #f97316;
+      --cyan: #2dd4bf;
+      --purple: #a855f7;
+      --text: #f1f5f9;
+      --text-muted: #b0bbd0;
+      --text-dim: #7d8fa3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.7;
+    }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      width: 256px; background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; height: 100vh;
+      overflow-y: auto; padding: 28px 0 0;
+      flex-shrink: 0; display: flex; flex-direction: column;
+    }
+    .sidebar-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 20px 20px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .sidebar-back:hover { color: var(--primary-light); }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-logo .tag { font-size: 11px; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .sidebar-logo h2 { font-size: 15px; margin-top: 4px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px; font-size: 13px; color: var(--text-muted);
+      text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      color: var(--text); background: var(--surface2); border-left-color: var(--primary);
+    }
+    .sidebar nav .sec {
+      font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 1px; padding: 16px 20px 6px; font-weight: 600;
+    }
+
+    /* ── 메인 ── */
+    .main { margin-left: 256px; max-width: 900px; padding: 48px 48px 120px; }
+
+    /* ── 섹션 ── */
+    .section { margin-bottom: 80px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
+      color: white; font-weight: 700; font-size: 15px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 22px; font-weight: 700; }
+    .section-header .sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    h3 { font-size: 16px; margin: 32px 0 12px; color: var(--text); }
+    h3.sub-h { font-size: 15px; margin: 24px 0 10px; color: var(--text); }
+    p { color: var(--text-muted); margin-bottom: 14px; font-size: 14.5px; }
+
+    /* ── 히어로 ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(14,165,233,0.12), rgba(168,85,247,0.08));
+      border: 1px solid rgba(14,165,233,0.3);
+      border-radius: 12px; padding: 36px 40px; margin-bottom: 56px;
+    }
+    .hero .tag { font-size: 11px; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+    .hero h1 {
+      font-size: 32px; font-weight: 800; margin: 10px 0 12px;
+      background: linear-gradient(135deg, #fff 40%, var(--primary-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { font-size: 15px; max-width: 560px; margin: 0; }
+    .hero .chips { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-muted); }
+
+    /* ── 코드 블록 ── */
+    .code-block { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 14px 0; }
+    .code-header {
+      background: var(--surface2); padding: 8px 16px; font-size: 12px;
+      color: var(--text-dim); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-block pre {
+      padding: 18px 20px; overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13.5px; line-height: 1.75; margin: 0;
+    }
+    .kw  { color: #c792ea; font-weight: 600; }
+    .fn  { color: #82aaff; }
+    .str { color: #4ade80; }
+    .num { color: #fb923c; }
+    .cmt { color: #64748b; font-style: italic; }
+    .tbl { color: #22d3ee; }
+    .col { color: #facc15; }
+    .op  { color: #f87171; }
+    .ph  { color: #fb923c; font-style: italic; }
+
+    /* ── 실행 예시 박스 ── */
+    .run-box {
+      background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 8px; overflow: hidden; margin: 14px 0;
+    }
+    .run-header {
+      background: rgba(34,197,94,0.12); padding: 7px 14px;
+      font-size: 12px; font-weight: 700; color: var(--green);
+      border-bottom: 1px solid rgba(34,197,94,0.2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .run-box pre {
+      padding: 14px 18px; overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13px; line-height: 1.7; margin: 0;
+      color: var(--text-muted);
+    }
+    .run-result {
+      background: rgba(255,255,255,0.025); border-top: 1px solid rgba(34,197,94,0.15);
+      padding: 10px 18px; font-size: 12px; color: var(--text-dim);
+      font-family: monospace;
+    }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 16px;
+    }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 8px; padding: 13px 16px; margin: 14px 0;
+      font-size: 13.5px; display: flex; gap: 12px;
+    }
+    .callout-tip  { background: rgba(74,222,128,0.08); border-left: 3px solid var(--green); }
+    .callout-warn { background: rgba(250,204,21,0.08); border-left: 3px solid var(--yellow); }
+    .callout-info { background: rgba(96,165,250,0.08); border-left: 3px solid var(--blue); }
+    .callout-purple { background: rgba(168,85,247,0.08); border-left: 3px solid var(--purple); }
+    .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+    .callout p { margin: 0; color: var(--text-muted); }
+    .callout strong { color: var(--text); }
+
+    /* ── 절 구조 다이어그램 ── */
+    .clause-flow {
+      display: flex; flex-direction: column; gap: 0;
+      border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; margin: 18px 0;
+    }
+    .clause-row {
+      display: flex; align-items: stretch;
+      border-bottom: 1px solid var(--border);
+    }
+    .clause-row:last-child { border-bottom: none; }
+    .clause-kw-cell {
+      width: 160px; flex-shrink: 0;
+      font-family: monospace; font-size: 13px; font-weight: 700;
+      padding: 12px 16px; display: flex; align-items: center;
+      border-right: 1px solid var(--border);
+    }
+    .clause-desc-cell {
+      flex: 1; padding: 12px 16px; font-size: 13px; color: var(--text-muted);
+      display: flex; align-items: center;
+    }
+    .clause-req { font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 700; flex-shrink: 0; margin-left: auto; }
+    .req-y { background: rgba(244,63,94,0.15); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+    .req-n { background: rgba(100,116,139,0.15); color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* ── 실행 순서 다이어그램 ── */
+    .exec-order {
+      display: flex; gap: 0; margin: 20px 0;
+      border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    }
+    .exec-step {
+      flex: 1; padding: 14px 10px; text-align: center;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .exec-step:last-child { border-right: none; }
+    .exec-order-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 11px; font-weight: 700; color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .exec-kw { font-family: monospace; font-size: 12px; font-weight: 700; }
+    .exec-desc { font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.4; }
+    .exec-step.active { background: rgba(14,165,233,0.06); }
+
+    /* ── 연산자 표 ── */
+    table.op-table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 14px 0;
+    }
+    table.op-table th {
+      background: var(--surface2); padding: 9px 14px; text-align: left;
+      border: 1px solid var(--border); color: var(--text-muted); font-weight: 600;
+    }
+    table.op-table td {
+      padding: 9px 14px; border: 1px solid var(--border); color: var(--text-muted);
+    }
+    table.op-table tr:hover td { background: rgba(255,255,255,0.02); }
+    table.op-table .mono { font-family: monospace; color: var(--cyan); font-size: 13px; }
+
+    /* ── JOIN 벤 다이어그램 ── */
+    .join-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+    .join-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .join-card-head {
+      padding: 10px 14px; font-size: 13px; font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .join-card-head.inner { background: rgba(14,165,233,0.12); color: var(--primary-light); }
+    .join-card-head.left  { background: rgba(124,106,247,0.12); color: #a5b4fc; }
+    .join-card-head.right { background: rgba(249,115,22,0.12);  color: #fdba74; }
+    .join-card-head.cross { background: rgba(244,63,94,0.10);   color: #fb7185; }
+    .join-body { padding: 12px 14px; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .join-venn {
+      display: flex; align-items: center; justify-content: center;
+      padding: 14px 0; font-size: 28px; letter-spacing: -4px;
+    }
+
+    /* ── 집계 함수 그리드 ── */
+    .agg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+    .agg-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .agg-name { font-family: monospace; font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+    .agg-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    code {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 6px; font-family: monospace; font-size: 13px; color: var(--cyan);
+    }
+
+    .hl { color: var(--primary-light); font-weight: 600; }
+
+    /* ── 테마 토글 ── */
+    .theme-switch-wrap {
+      margin-top: auto; flex-shrink: 0; padding: 14px 20px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .theme-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .theme-switch input { display: none; }
+    .theme-slider {
+      position: absolute; inset: 0; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .theme-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; top: 3px; background: var(--primary); border-radius: 50%; transition: transform 0.2s;
+    }
+    .theme-switch input:checked + .theme-slider { background: #ddd8ff; border-color: #a899f8; }
+    .theme-switch input:checked + .theme-slider::before { transform: translateX(22px); }
+    .theme-icon { font-size: 15px; line-height: 1; color: var(--text-muted); }
+
+    /* ── 라이트 모드 ── */
+    body.light {
+      --bg: #f0f2f7; --surface: #ffffff; --surface2: #e4e7f0;
+      --border: #cdd1de; --text: #111827; --text-muted: #374151; --text-dim: #6b7280;
+      --primary: #0284c7; --primary-light: #0369a1;
+      --green: #16a34a; --yellow: #d97706; --red: #dc2626;
+      --blue: #4f46e5; --orange: #ea580c; --cyan: #0d9488;
+    }
+    body.light .code-block { background: #dde0eb; }
+    body.light .code-block pre { background: #dde0eb; color: #111827; }
+    body.light .run-box { background: rgba(22,163,74,0.04); }
+    body.light .run-header { background: rgba(22,163,74,0.10); }
+    body.light .run-box pre { color: #374151; }
+    body.light .kw  { color: #6d28d9; }
+    body.light .fn  { color: #1d4ed8; }
+    body.light .str { color: #15803d; }
+    body.light .num { color: #c2410c; }
+    body.light .cmt { color: #6b7280; }
+    body.light .tbl { color: #0891b2; }
+    body.light .col { color: #b45309; }
+    body.light .op  { color: #b91c1c; }
+    body.light .ph  { color: #c2410c; }
+    body.light .hero h1 { background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #000; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 24px 20px 80px; }
+      .join-grid { grid-template-columns: 1fr; }
+      .agg-grid  { grid-template-columns: 1fr 1fr; }
+      .exec-order { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar">
+    <a href="../index.html" class="sidebar-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      허브로 돌아가기
+    </a>
+    <div class="sidebar-logo">
+      <div class="tag">강의 교안</div>
+      <h2>SQL 쿼리 작성법</h2>
+    </div>
+    <nav>
+      <div class="sec">기초</div>
+      <a href="#s1">① SELECT 기본 구조</a>
+      <a href="#s2">② 실행 순서</a>
+
+      <div class="sec">조건·필터</div>
+      <a href="#s3">③ WHERE 조건 작성법</a>
+
+      <div class="sec">테이블 연결</div>
+      <a href="#s4">④ JOIN 원리</a>
+
+      <div class="sec">집계</div>
+      <a href="#s5">⑤ 집계 함수</a>
+      <a href="#s6">⑥ GROUP BY & HAVING</a>
+
+      <div class="sec">심화</div>
+      <a href="#s7">⑦ 서브쿼리</a>
+      <a href="#s8">⑧ ORDER BY & LIMIT</a>
+    </nav>
+    <div class="theme-switch-wrap">
+      <span class="theme-icon">🌙</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon">☀️</span>
+    </div>
+  </aside>
+
+  <!-- ── 메인 ── -->
+  <main class="main">
+
+    <div class="hero">
+      <div class="tag">SQL Concepts</div>
+      <h1>SELECT 쿼리,<br>어떻게 작성하는가</h1>
+      <p>쿼리를 구성하는 각 절의 역할과 작성 순서를 이해합니다.
+         모든 예시는 우리 게시판 DB(<code>board.db</code>)에서 직접 실행할 수 있습니다.</p>
+      <div class="chips">
+        <span class="chip">sqlite3 board.db</span>
+        <span class="chip">users · posts · comments</span>
+        <span class="chip">seed.sql 적용 후 실행</span>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ① SELECT 기본 구조
+    ══════════════════════════════════════ -->
+    <div class="section" id="s1">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div>
+          <h2>SELECT 기본 구조</h2>
+          <div class="sub">쿼리를 구성하는 6가지 절(clause)</div>
+        </div>
+      </div>
+
+      <p>SELECT 쿼리는 최대 6개의 절로 구성됩니다. <span class="hl">SELECT와 FROM만 필수</span>이고 나머지는 필요할 때만 씁니다.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#febc2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          SELECT 전체 구조
+        </div>
+        <pre><span class="kw">SELECT</span>   <span class="col">컬럼1</span>, <span class="col">컬럼2</span>, ...      <span class="cmt">-- ① 가져올 컬럼 (필수)</span>
+<span class="kw">FROM</span>     <span class="tbl">테이블명</span>              <span class="cmt">-- ② 어느 테이블에서 (필수)</span>
+<span class="kw">WHERE</span>    <span class="col">조건</span>                  <span class="cmt">-- ③ 행 필터링 (선택)</span>
+<span class="kw">GROUP BY</span> <span class="col">기준컬럼</span>             <span class="cmt">-- ④ 그룹화 (선택)</span>
+<span class="kw">HAVING</span>   <span class="col">그룹 조건</span>             <span class="cmt">-- ⑤ 그룹 필터링 (선택)</span>
+<span class="kw">ORDER BY</span> <span class="col">정렬기준</span>             <span class="cmt">-- ⑥ 정렬 (선택)</span>
+<span class="kw">LIMIT</span>    <span class="num">n</span>                     <span class="cmt">-- ⑦ 개수 제한 (선택)</span></pre>
+      </div>
+
+      <div class="clause-flow">
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#c792ea">SELECT</div>
+          <div class="clause-desc-cell">가져올 컬럼을 지정합니다. <code>*</code>는 전체 컬럼, <code>테이블.컬럼</code>으로 출처를 명확히 할 수 있습니다.</div>
+          <span class="clause-req req-y">필수</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#22d3ee">FROM</div>
+          <div class="clause-desc-cell">데이터를 가져올 테이블을 지정합니다. JOIN이 있으면 이 절에서 테이블들을 연결합니다.</div>
+          <span class="clause-req req-y">필수</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#f87171">WHERE</div>
+          <div class="clause-desc-cell">조건에 맞는 행만 남깁니다. GROUP BY 이전에 실행되므로 집계 결과를 조건으로 쓸 수 없습니다.</div>
+          <span class="clause-req req-n">선택</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#2dd4bf">GROUP BY</div>
+          <div class="clause-desc-cell">지정한 컬럼 기준으로 행들을 그룹으로 묶습니다. 집계 함수(COUNT, SUM 등)와 함께 씁니다.</div>
+          <span class="clause-req req-n">선택</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#fbbf24">HAVING</div>
+          <div class="clause-desc-cell">GROUP BY로 만들어진 그룹에 조건을 겁니다. 집계 결과(COUNT, SUM 등)를 조건으로 쓸 수 있습니다.</div>
+          <span class="clause-req req-n">선택</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#82aaff">ORDER BY</div>
+          <div class="clause-desc-cell">결과를 정렬합니다. <code>ASC</code>(오름차순, 기본값), <code>DESC</code>(내림차순).</div>
+          <span class="clause-req req-n">선택</span>
+        </div>
+        <div class="clause-row">
+          <div class="clause-kw-cell" style="color:#fb923c">LIMIT</div>
+          <div class="clause-desc-cell">반환할 행의 최대 개수를 제한합니다. <code>OFFSET n</code>과 함께 쓰면 페이지네이션이 가능합니다.</div>
+          <span class="clause-req req-n">선택</span>
+        </div>
+      </div>
+
+      <h3>게시판 예시 — 가장 단순한 것부터</h3>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 전체 유저 조회</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>;</pre>
+        <div class="run-result">→ users 테이블의 모든 행, id·username·created_at 3개 컬럼 반환</div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 최근 5개 게시글</div>
+        <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+        <div class="run-result">→ 가장 최근에 작성된 게시글 5개 반환</div>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-icon">💡</div>
+        <p><strong>SELECT *는 가급적 피하세요.</strong> 필요한 컬럼만 명시하면 네트워크 전송량이 줄고, 어떤 데이터를 쓰는지 코드를 읽는 사람이 바로 알 수 있습니다. users 테이블에서 <code>SELECT *</code>를 쓰면 비밀번호 해시도 함께 반환됩니다.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ② 실행 순서
+    ══════════════════════════════════════ -->
+    <div class="section" id="s2">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div>
+          <h2>실행 순서</h2>
+          <div class="sub">작성 순서와 실행 순서는 다르다</div>
+        </div>
+      </div>
+
+      <p>SQL은 <span class="hl">작성하는 순서와 실행되는 순서가 다릅니다.</span> 이 차이를 이해하면 "왜 WHERE에서 SELECT 별칭을 못 쓰는가" 같은 의문이 해결됩니다.</p>
+
+      <div class="exec-order">
+        <div class="exec-step active">
+          <div class="exec-order-num" style="background:#22c55e">1</div>
+          <div class="exec-kw" style="color:#22d3ee">FROM</div>
+          <div class="exec-desc">테이블 선택·JOIN</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#3b82f6">2</div>
+          <div class="exec-kw" style="color:#f87171">WHERE</div>
+          <div class="exec-desc">행 필터링</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#8b5cf6">3</div>
+          <div class="exec-kw" style="color:#2dd4bf">GROUP BY</div>
+          <div class="exec-desc">그룹화</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#f59e0b">4</div>
+          <div class="exec-kw" style="color:#fbbf24">HAVING</div>
+          <div class="exec-desc">그룹 필터</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#ec4899">5</div>
+          <div class="exec-kw" style="color:#c792ea">SELECT</div>
+          <div class="exec-desc">컬럼 선택·별칭</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#14b8a6">6</div>
+          <div class="exec-kw" style="color:#82aaff">ORDER BY</div>
+          <div class="exec-desc">정렬</div>
+        </div>
+        <div class="exec-step">
+          <div class="exec-order-num" style="background:#64748b">7</div>
+          <div class="exec-kw" style="color:#fb923c">LIMIT</div>
+          <div class="exec-desc">개수 제한</div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <p><strong>SELECT가 5번째로 실행됩니다.</strong> 따라서 WHERE절(2번째)에서는 SELECT에서 만든 별칭(AS)을 사용할 수 없습니다. ORDER BY는 6번째라 SELECT 별칭 사용이 가능합니다.</p>
+      </div>
+
+      <h3>실행 순서가 중요한 이유 — 예시</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#febc2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          WHERE에서 SELECT 별칭을 쓰면 오류 발생
+        </div>
+        <pre><span class="cmt">-- ❌ 오류: WHERE은 SELECT보다 먼저 실행되므로 별칭을 모름</span>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">cnt</span> <span class="op">></span> <span class="num">5</span>;        <span class="cmt">-- cnt는 아직 정의되지 않음</span>
+
+<span class="cmt">-- ✅ 올바른 방법: 집계 결과 조건은 HAVING에 작성</span>
+<span class="kw">SELECT</span>   <span class="col">post_id</span>, <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">GROUP BY</span> <span class="col">post_id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="op">></span> <span class="num">5</span>;</pre>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 댓글이 2개 이상인 게시글만 조회</div>
+        <pre><span class="kw">SELECT</span>   <span class="col">post_id</span>,
+         <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>          <span class="cmt">-- ① 테이블 선택</span>
+<span class="cmt">--                            ② WHERE 없음 (전체 사용)</span>
+<span class="kw">GROUP BY</span> <span class="col">post_id</span>           <span class="cmt">-- ③ 게시글별로 그룹화</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>   <span class="cmt">-- ④ 그룹 중 2개 이상만</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>; <span class="cmt">-- ⑥ 많은 것부터 정렬</span></pre>
+        <div class="run-result">→ 댓글이 2개 이상 달린 게시글 목록, 댓글 많은 순 정렬</div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ③ WHERE 조건 작성법
+    ══════════════════════════════════════ -->
+    <div class="section" id="s3">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div>
+          <h2>WHERE 조건 작성법</h2>
+          <div class="sub">비교·논리·패턴·범위·목록·NULL 처리</div>
+        </div>
+      </div>
+
+      <p>WHERE절에는 다양한 연산자를 사용할 수 있습니다. 조건이 <code>true</code>인 행만 결과에 포함됩니다.</p>
+
+      <h3>비교 연산자</h3>
+      <table class="op-table">
+        <tr><th>연산자</th><th>의미</th><th>게시판 예시</th></tr>
+        <tr><td class="mono">=</td><td>같다</td><td><code>user_id = 1</code></td></tr>
+        <tr><td class="mono">!= 또는 &lt;&gt;</td><td>다르다</td><td><code>user_id != 1</code></td></tr>
+        <tr><td class="mono">&gt; / &gt;=</td><td>크다 / 크거나 같다</td><td><code>id > 10</code></td></tr>
+        <tr><td class="mono">&lt; / &lt;=</td><td>작다 / 작거나 같다</td><td><code>id <= 50</code></td></tr>
+      </table>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — user_id가 1번인 게시글만 조회</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>;</pre>
+        <div class="run-result">→ alice(id=1)가 작성한 게시글만 반환</div>
+      </div>
+
+      <h3>논리 연산자 — AND / OR / NOT</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 여러 조건 조합</div>
+        <pre><span class="cmt">-- AND: 두 조건 모두 참인 행</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>
+  <span class="kw">AND</span>  <span class="col">id</span> <span class="op"><=</span> <span class="num">50</span>;
+
+<span class="cmt">-- OR: 둘 중 하나라도 참인 행</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>
+  <span class="kw">OR</span>   <span class="col">user_id</span> <span class="op">=</span> <span class="num">2</span>;</pre>
+        <div class="run-result">→ 첫 번째: alice 작성 + id 50 이하 / 두 번째: alice 또는 bob의 게시글</div>
+      </div>
+
+      <h3>LIKE — 패턴 검색</h3>
+      <p><code>%</code>는 0개 이상의 임의 문자, <code>_</code>는 정확히 1개의 임의 문자를 의미합니다.</p>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 제목에 "JOIN" 포함된 게시글</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%JOIN%'</span>;     <span class="cmt">-- 앞뒤 어디든 JOIN 포함</span></pre>
+        <div class="run-result">→ "JOIN 완전 정복", "NATURAL JOIN 이해" 등 제목에 JOIN이 들어간 게시글</div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 아이디가 'a'로 시작하는 유저</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="kw">LIKE</span> <span class="str">'a%'</span>;       <span class="cmt">-- a로 시작하는 모든 아이디</span></pre>
+        <div class="run-result">→ alice 반환</div>
+      </div>
+
+      <h3>BETWEEN — 범위 조건</h3>
+      <div class="callout callout-info">
+        <div class="callout-icon">ℹ️</div>
+        <p><strong>BETWEEN a AND b</strong>는 a 이상 b 이하(양 끝값 포함)입니다. <code>WHERE id >= 10 AND id <= 20</code>과 동일합니다.</p>
+      </div>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — id가 10~20 사이인 게시글</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="kw">BETWEEN</span> <span class="num">10</span> <span class="kw">AND</span> <span class="num">20</span>;</pre>
+        <div class="run-result">→ id 10, 11, 12 ... 20인 게시글 11개 반환</div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 2024년 2월에 작성된 게시글</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">BETWEEN</span> <span class="str">'2024-02-01'</span> <span class="kw">AND</span> <span class="str">'2024-02-29 23:59:59'</span>;</pre>
+        <div class="run-result">→ 2024년 2월 한 달간 작성된 게시글 반환</div>
+      </div>
+
+      <h3>IN — 목록 조건</h3>
+      <p><code>IN (값1, 값2, ...)</code>은 목록 중 하나와 일치하는 행을 반환합니다. OR를 여러 번 쓰는 것보다 간결합니다.</p>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 특정 유저들의 게시글</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">IN</span> (<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>);    <span class="cmt">-- alice, carol, eve의 게시글</span></pre>
+        <div class="run-result">→ alice·carol·eve 세 명이 작성한 게시글 반환 (OR 3개와 동일)</div>
+      </div>
+
+      <h3>IS NULL / IS NOT NULL</h3>
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <p><strong>NULL은 <code>= NULL</code>로 비교하면 안 됩니다.</strong> NULL은 "값이 없음"이므로 비교 결과가 항상 unknown입니다. 반드시 <code>IS NULL</code> 또는 <code>IS NOT NULL</code>을 사용합니다.</p>
+      </div>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 개념 확인 (게시판 테이블엔 NULL 없음)</div>
+        <pre><span class="cmt">-- NULL 비교의 올바른 방법</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">IS NOT NULL</span>;  <span class="cmt">-- created_at이 있는 유저</span>
+
+<span class="cmt">-- ❌ 잘못된 방법 (항상 0행 반환)</span>
+<span class="cmt">-- WHERE created_at = NULL</span></pre>
+        <div class="run-result">→ created_at이 있는 모든 유저 (게시판에선 전체 유저)</div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ④ JOIN 원리
+    ══════════════════════════════════════ -->
+    <div class="section" id="s4">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div>
+          <h2>JOIN 원리</h2>
+          <div class="sub">여러 테이블의 데이터를 하나로 합치기</div>
+        </div>
+      </div>
+
+      <p>게시글 테이블에는 작성자 <code>user_id</code>(숫자)만 있습니다. 화면에 이름을 보여주려면 users 테이블과 <span class="hl">JOIN</span>해서 가져와야 합니다.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#febc2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          JOIN 기본 문법
+        </div>
+        <pre><span class="kw">SELECT</span> ...
+<span class="kw">FROM</span>   <span class="tbl">테이블A</span>
+<span class="kw">JOIN</span>   <span class="tbl">테이블B</span> <span class="kw">ON</span> <span class="tbl">테이블A</span>.<span class="col">연결컬럼</span> <span class="op">=</span> <span class="tbl">테이블B</span>.<span class="col">연결컬럼</span></pre>
+      </div>
+
+      <div class="join-grid">
+        <div class="join-card">
+          <div class="join-card-head inner">INNER JOIN</div>
+          <div class="join-venn">🔵🟣🔴 → 🟣</div>
+          <div class="join-body">
+            <strong style="color:var(--text)">양쪽 테이블 모두에 매칭되는 행만 반환</strong><br>
+            게시판에서: 게시글과 작성자가 모두 존재할 때만 결과 포함.<br>
+            <code style="margin-top:6px; display:inline-block">JOIN</code>만 써도 INNER JOIN입니다.
+          </div>
+        </div>
+        <div class="join-card">
+          <div class="join-card-head left">LEFT JOIN</div>
+          <div class="join-venn">🔵🟣🔴 → 🔵🟣</div>
+          <div class="join-body">
+            <strong style="color:var(--text)">왼쪽 테이블의 모든 행을 포함, 오른쪽은 없으면 NULL</strong><br>
+            게시판에서: 댓글이 없는 게시글도 목록에 표시해야 할 때.
+          </div>
+        </div>
+        <div class="join-card">
+          <div class="join-card-head right">RIGHT JOIN</div>
+          <div class="join-venn">🔵🟣🔴 → 🟣🔴</div>
+          <div class="join-body">
+            <strong style="color:var(--text)">오른쪽 테이블의 모든 행을 포함, 왼쪽은 없으면 NULL</strong><br>
+            SQLite는 RIGHT JOIN을 지원하지 않습니다. 테이블 순서를 바꿔 LEFT JOIN으로 대체합니다.
+          </div>
+        </div>
+        <div class="join-card">
+          <div class="join-card-head cross">CROSS JOIN (주의)</div>
+          <div class="join-venn">A×B → 전체 조합</div>
+          <div class="join-body">
+            <strong style="color:var(--text)">ON 없이 두 테이블의 모든 행을 조합</strong><br>
+            users 20명 × posts 100개 = 2,000행 생성. 의도하지 않게 발생하면 성능 문제를 일으킵니다.
+          </div>
+        </div>
+      </div>
+
+      <h3>INNER JOIN — 작성자 이름과 함께 게시글 조회</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 게시글 + 작성자 이름 (INNER JOIN)</div>
+        <pre><span class="kw">SELECT</span>  <span class="tbl">posts</span>.<span class="col">id</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span> <span class="kw">AS</span> <span class="col">author</span>
+<span class="kw">FROM</span>    <span class="tbl">posts</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+        <div class="run-result">→ id, title, 작성자 이름 3컬럼 반환 (작성자가 없는 게시글은 제외)</div>
+      </div>
+
+      <h3>LEFT JOIN — 댓글 수 포함 목록 (댓글 없는 게시글도 포함)</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 게시글 목록 + 댓글 수 (LEFT JOIN)</div>
+        <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+        <div class="run-result">→ 댓글 수 기준 상위 10개 게시글. 댓글 0개인 게시글은 comment_count = 0으로 포함</div>
+      </div>
+
+      <h3>3개 테이블 JOIN</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 댓글 + 게시글 제목 + 댓글 작성자</div>
+        <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">id</span>       <span class="kw">AS</span> <span class="col">comment_id</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>          <span class="kw">AS</span> <span class="col">post_title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>       <span class="kw">AS</span> <span class="col">commenter</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+        <div class="run-result">→ 댓글 내용, 소속 게시글 제목, 댓글 작성자 이름을 한 번에 조회</div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ⑤ 집계 함수
+    ══════════════════════════════════════ -->
+    <div class="section" id="s5">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div>
+          <h2>집계 함수</h2>
+          <div class="sub">여러 행을 하나의 값으로 요약하기</div>
+        </div>
+      </div>
+
+      <p>집계 함수는 여러 행의 값을 받아 <span class="hl">하나의 값</span>으로 줄여줍니다. GROUP BY와 함께 쓰면 그룹별로 집계합니다.</p>
+
+      <div class="agg-grid">
+        <div class="agg-card">
+          <div class="agg-name" style="color:#38bdf8">COUNT()</div>
+          <div class="agg-desc">행의 수를 셉니다.<br><code>COUNT(*)</code>는 전체 행,<br><code>COUNT(컬럼)</code>은 NULL 제외</div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-name" style="color:#4ade80">SUM()</div>
+          <div class="agg-desc">숫자 컬럼의 합계를 구합니다.<br>NULL은 무시합니다.</div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-name" style="color:#fbbf24">AVG()</div>
+          <div class="agg-desc">숫자 컬럼의 평균을 구합니다.<br>NULL 행은 제외하고 계산합니다.</div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-name" style="color:#fb923c">MIN()</div>
+          <div class="agg-desc">최솟값을 반환합니다.<br>숫자, 문자, 날짜 모두 가능합니다.</div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-name" style="color:#f87171">MAX()</div>
+          <div class="agg-desc">최댓값을 반환합니다.<br>가장 최근 날짜를 찾을 때도 씁니다.</div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-name" style="color:#a78bfa">COUNT(DISTINCT)</div>
+          <div class="agg-desc">중복을 제거한 고유 값의 수를 셉니다.</div>
+        </div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 게시판 전체 통계 한 번에</div>
+        <pre><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">users</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_users</span>,    <span class="cmt">-- 총 유저 수</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">posts</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_posts</span>,    <span class="cmt">-- 총 게시글 수</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">total_comments</span>  <span class="cmt">-- 총 댓글 수</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>    <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>;</pre>
+        <div class="run-result">→ total_users: 20, total_posts: 100, total_comments: 200 (seed.sql 적용 기준)</div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 가장 먼저/늦게 가입한 유저</div>
+        <pre><span class="kw">SELECT</span>
+  <span class="fn">MIN</span>(<span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">first_joined</span>,
+  <span class="fn">MAX</span>(<span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">last_joined</span>,
+  <span class="fn">COUNT</span>(<span class="op">*</span>)        <span class="kw">AS</span> <span class="col">total</span>
+<span class="kw">FROM</span> <span class="tbl">users</span>;</pre>
+        <div class="run-result">→ 첫 가입일, 최근 가입일, 총 유저 수 반환</div>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <p><strong>COUNT(*) vs COUNT(컬럼)</strong><br>
+        <code>COUNT(*)</code>는 NULL을 포함한 모든 행을 셉니다.<br>
+        <code>COUNT(컬럼명)</code>는 해당 컬럼이 NULL인 행을 제외하고 셉니다.<br>
+        LEFT JOIN 결과에서 "매칭된 행만" 세려면 반드시 <code>COUNT(컬럼명)</code>을 쓰세요.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ⑥ GROUP BY & HAVING
+    ══════════════════════════════════════ -->
+    <div class="section" id="s6">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div>
+          <h2>GROUP BY &amp; HAVING</h2>
+          <div class="sub">그룹별 집계와 그룹 필터링</div>
+        </div>
+      </div>
+
+      <p>GROUP BY는 지정한 컬럼의 값이 같은 행들을 하나의 그룹으로 묶습니다. 각 그룹에 집계 함수를 적용해 <span class="hl">그룹별 통계</span>를 만듭니다.</p>
+
+      <h3>GROUP BY 동작 원리</h3>
+      <div class="card" style="font-size:13px; color:var(--text-muted)">
+        <div style="margin-bottom:12px">comments 테이블을 <code>user_id</code>로 GROUP BY하면:</div>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center">
+          <div>
+            <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px">GROUP BY 전 (일부)</div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px; font-family:monospace">
+              <tr style="background:var(--surface2); color:var(--text-dim)">
+                <th style="padding:5px 8px; border:1px solid var(--border)">id</th>
+                <th style="padding:5px 8px; border:1px solid var(--border)">user_id</th>
+              </tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border)">1</td><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(14,165,233,0.08)">2</td></tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border)">2</td><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(34,197,94,0.08)">3</td></tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border)">3</td><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(14,165,233,0.08)">2</td></tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border)">4</td><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(168,85,247,0.08)">4</td></tr>
+            </table>
+          </div>
+          <div style="font-size:24px; color:var(--text-dim)">→</div>
+          <div>
+            <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px">GROUP BY 후</div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px; font-family:monospace">
+              <tr style="background:var(--surface2); color:var(--text-dim)">
+                <th style="padding:5px 8px; border:1px solid var(--border)">user_id</th>
+                <th style="padding:5px 8px; border:1px solid var(--border)">COUNT(*)</th>
+              </tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(14,165,233,0.08)">2</td><td style="padding:5px 8px; border:1px solid var(--border)">2</td></tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(34,197,94,0.08)">3</td><td style="padding:5px 8px; border:1px solid var(--border)">1</td></tr>
+              <tr><td style="padding:5px 8px; border:1px solid var(--border); background:rgba(168,85,247,0.08)">4</td><td style="padding:5px 8px; border:1px solid var(--border)">1</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 유저별 게시글 수 (많은 순)</div>
+        <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+        <div class="run-result">→ 각 유저의 게시글 수. 게시글이 없는 유저는 0으로 표시</div>
+      </div>
+
+      <h3>WHERE vs HAVING 비교</h3>
+      <table class="op-table">
+        <tr><th>구분</th><th>WHERE</th><th>HAVING</th></tr>
+        <tr><td>실행 시점</td><td>GROUP BY 이전 (개별 행 필터)</td><td>GROUP BY 이후 (그룹 필터)</td></tr>
+        <tr><td>사용 가능 조건</td><td>일반 컬럼 값</td><td>집계 함수 결과</td></tr>
+        <tr><td>예시</td><td><code>WHERE user_id = 1</code></td><td><code>HAVING COUNT(*) > 5</code></td></tr>
+      </table>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — WHERE + GROUP BY + HAVING 함께 쓰기</div>
+        <pre><span class="cmt">-- 2024년 2월 이후 가입한 유저 중, 게시글을 5개 이상 작성한 유저</span>
+<span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="tbl">users</span>.<span class="col">created_at</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">users</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-02-01'</span>  <span class="cmt">-- 행 필터: 2월 이후 가입자만</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">5</span>              <span class="cmt">-- 그룹 필터: 게시글 5개 이상</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+        <div class="run-result">→ 2024년 2월 이후 가입 + 게시글 5개 이상인 유저 목록</div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ⑦ 서브쿼리
+    ══════════════════════════════════════ -->
+    <div class="section" id="s7">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <div>
+          <h2>서브쿼리</h2>
+          <div class="sub">쿼리 안에 쿼리 — WHERE절, FROM절 활용</div>
+        </div>
+      </div>
+
+      <p>서브쿼리는 <span class="hl">쿼리 안에 중첩된 또 다른 쿼리</span>입니다. 결과를 조건 값이나 임시 테이블로 활용합니다.</p>
+
+      <h3>WHERE절 서브쿼리 — 단일 값 반환</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — alice가 작성한 게시글의 댓글 모두 조회</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">content</span>, <span class="col">post_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">post_id</span> <span class="kw">IN</span> (
+  <span class="kw">SELECT</span> <span class="col">id</span>           <span class="cmt">-- 서브쿼리: alice의 게시글 id 목록</span>
+  <span class="kw">FROM</span>   <span class="tbl">posts</span>
+  <span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> (
+    <span class="kw">SELECT</span> <span class="col">id</span>         <span class="cmt">-- 서브쿼리: alice의 id 조회</span>
+    <span class="kw">FROM</span>   <span class="tbl">users</span>
+    <span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="str">'alice'</span>
+  )
+);</pre>
+        <div class="run-result">→ alice의 게시글에 달린 모든 댓글 반환</div>
+      </div>
+
+      <h3>WHERE절 서브쿼리 — 존재 여부 확인 (EXISTS)</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 댓글을 한 번이라도 작성한 유저만 조회</div>
+        <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="kw">EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span>
+  <span class="kw">FROM</span>   <span class="tbl">comments</span>
+  <span class="kw">WHERE</span>  <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>   <span class="cmt">-- 외부 쿼리의 users.id 참조</span>
+);</pre>
+        <div class="run-result">→ 댓글을 한 번 이상 달았던 유저 목록 반환</div>
+      </div>
+
+      <h3>FROM절 서브쿼리 — 인라인 뷰</h3>
+      <p>FROM절에 넣은 서브쿼리는 <span class="hl">임시 테이블</span>처럼 동작합니다. 복잡한 집계 결과를 한 번 더 가공할 때 씁니다.</p>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 유저별 게시글 수 중 평균 이상인 유저만</div>
+        <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">post_count</span>
+<span class="kw">FROM</span> (
+  <span class="cmt">-- 서브쿼리로 유저별 게시글 수 집계</span>
+  <span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+           <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+  <span class="kw">FROM</span>     <span class="tbl">users</span>
+  <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+  <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+) <span class="kw">AS</span> <span class="col">user_stats</span>                           <span class="cmt">-- 인라인 뷰에는 별칭 필수</span>
+<span class="kw">WHERE</span> <span class="col">post_count</span> <span class="op">></span> (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">post_count</span>)                 <span class="cmt">-- 전체 평균 게시글 수</span>
+  <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span>   <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+    <span class="kw">FROM</span>     <span class="tbl">users</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+    <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+  )
+)
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+        <div class="run-result">→ 평균(5개) 이상의 게시글을 작성한 유저와 그 수 반환</div>
+      </div>
+
+      <div class="callout callout-purple">
+        <div class="callout-icon">💡</div>
+        <p><strong>서브쿼리가 복잡해지면 CTE(WITH절)로 정리하세요.</strong><br>
+        <code>WITH user_stats AS (SELECT ...)</code> 형태로 서브쿼리에 이름을 붙이면 훨씬 읽기 쉬워집니다. SELECT 실습 파일에서 더 다룹니다.</p>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         ⑧ ORDER BY & LIMIT
+    ══════════════════════════════════════ -->
+    <div class="section" id="s8">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <div>
+          <h2>ORDER BY &amp; LIMIT</h2>
+          <div class="sub">정렬과 페이지네이션</div>
+        </div>
+      </div>
+
+      <p>ORDER BY는 결과를 정렬하고, LIMIT / OFFSET은 결과의 일부만 가져올 때 씁니다.</p>
+
+      <h3>ORDER BY — 정렬</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 다중 컬럼 정렬</div>
+        <pre><span class="cmt">-- user_id 오름차순, 같은 user_id 안에서는 created_at 내림차순</span>
+<span class="kw">SELECT</span>   <span class="col">user_id</span>, <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">user_id</span> <span class="kw">ASC</span>,
+         <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+        <div class="run-result">→ 유저 id 순서대로, 같은 유저라면 최신 게시글 먼저 정렬</div>
+      </div>
+
+      <h3>LIMIT &amp; OFFSET — 페이지네이션</h3>
+      <div class="card">
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:12px">
+          LIMIT n OFFSET m → m번째 행부터 n개 가져오기
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:13px; font-family:monospace">
+          <div style="display:flex; gap:12px; align-items:center">
+            <span style="color:var(--text-dim); width:60px">1페이지</span>
+            <code>LIMIT 10 OFFSET 0</code>
+            <span style="color:var(--text-dim)">→ 1~10번째 행</span>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center">
+            <span style="color:var(--text-dim); width:60px">2페이지</span>
+            <code>LIMIT 10 OFFSET 10</code>
+            <span style="color:var(--text-dim)">→ 11~20번째 행</span>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center">
+            <span style="color:var(--text-dim); width:60px">n페이지</span>
+            <code>LIMIT 10 OFFSET (n-1)*10</code>
+            <span style="color:var(--text-dim)">→ 일반 공식</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 게시글 목록 2페이지 (페이지당 10개)</div>
+        <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>
+<span class="kw">OFFSET</span>   <span class="num">10</span>;     <span class="cmt">-- 2페이지: 11~20번째 게시글</span></pre>
+        <div class="run-result">→ 최신순 기준 11~20번째 게시글 (2페이지) 반환</div>
+      </div>
+
+      <div class="callout callout-warn">
+        <div class="callout-icon">⚠️</div>
+        <p><strong>OFFSET이 크면 느려집니다.</strong> <code>OFFSET 10000</code>이라면 앞의 10,000행을 읽고 버리는 방식으로 동작합니다. 데이터가 많을 때는 마지막으로 본 <code>id</code>를 기준으로 <code>WHERE id &lt; 마지막id</code> 방식을 씁니다 (커서 기반 페이지네이션).</p>
+      </div>
+
+      <h3>마무리 — 전체 패턴 한 눈에</h3>
+      <div class="run-box">
+        <div class="run-header">▶ 실행 예시 — 앞서 배운 모든 것을 합친 쿼리</div>
+        <pre><span class="cmt">-- 2024년 3월 이후 작성된 게시글 중</span>
+<span class="cmt">-- 댓글이 2개 이상인 것을 게시글 + 작성자 + 댓글 수와 함께 조회</span>
+<span class="cmt">-- 댓글 많은 순, 최대 5개</span>
+<span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>             <span class="kw">AS</span> <span class="col">author</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>)         <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>                              <span class="cmt">-- FROM</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-03-01'</span>  <span class="cmt">-- WHERE: 3월 이후만</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>                           <span class="cmt">-- GROUP BY: 게시글별</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>           <span class="cmt">-- HAVING: 댓글 2개 이상</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>               <span class="cmt">-- ORDER BY: 많은 순</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;                                  <span class="cmt">-- LIMIT: 상위 5개</span></pre>
+        <div class="run-result">→ 3월 이후 게시글 중 댓글 2개 이상, 댓글 많은 순 상위 5개</div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('change', () => {
+    document.body.classList.toggle('light', toggle.checked);
+  });
+
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

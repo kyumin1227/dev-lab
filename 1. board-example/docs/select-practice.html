@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SELECT 실습 — 게시판으로 배우기</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #242736;
+      --border: #2e3148;
+      --primary: #0ea5e9;
+      --primary-light: #38bdf8;
+      --green: #22c55e;
+      --yellow: #fbbf24;
+      --red: #f43f5e;
+      --blue: #6366f1;
+      --orange: #f97316;
+      --cyan: #2dd4bf;
+      --purple: #a855f7;
+      --text: #f1f5f9;
+      --text-muted: #b0bbd0;
+      --text-dim: #7d8fa3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.7;
+    }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── 사이드바 ── */
+    .sidebar {
+      width: 256px; background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; height: 100vh;
+      overflow-y: auto; padding: 28px 0 0;
+      flex-shrink: 0; display: flex; flex-direction: column;
+    }
+    .sidebar-back {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 20px 20px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .sidebar-back:hover { color: var(--primary-light); }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-logo .tag { font-size: 11px; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .sidebar-logo h2 { font-size: 15px; margin-top: 4px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 20px; font-size: 13px; color: var(--text-muted);
+      text-decoration: none; border-left: 2px solid transparent; transition: all 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      color: var(--text); background: var(--surface2); border-left-color: var(--primary);
+    }
+    .sidebar nav .sec {
+      font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 1px; padding: 14px 20px 5px; font-weight: 600;
+    }
+    .sidebar-progress {
+      padding: 12px 20px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim);
+    }
+    .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 6px; }
+    .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
+
+    /* ── 메인 ── */
+    .main { margin-left: 256px; max-width: 900px; padding: 48px 48px 120px; }
+
+    /* ── 섹션 ── */
+    .section { margin-bottom: 72px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .level-badge {
+      padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+    }
+    .lv1 { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .lv2 { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .lv3 { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+    .lv4 { background: rgba(244,63,94,0.15);  color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+    .lv5 { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .section-header h2 { font-size: 20px; font-weight: 700; }
+    .section-header .sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    p { color: var(--text-muted); margin-bottom: 12px; font-size: 14px; }
+
+    /* ── 히어로 ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(14,165,233,0.08));
+      border: 1px solid rgba(168,85,247,0.3);
+      border-radius: 12px; padding: 32px 40px; margin-bottom: 52px;
+    }
+    .hero .tag { font-size: 11px; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+    .hero h1 {
+      font-size: 30px; font-weight: 800; margin: 10px 0 10px;
+      background: linear-gradient(135deg, #fff 40%, #c084fc);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p { font-size: 14px; max-width: 540px; margin: 0; }
+    .hero .chips { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 11px; font-size: 12px; color: var(--text-muted); }
+
+    /* ── 문제 카드 ── */
+    .q-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+    }
+    .q-header {
+      padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .q-num {
+      width: 28px; height: 28px; border-radius: 6px; background: var(--surface2);
+      font-size: 12px; font-weight: 700; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+      border: 1px solid var(--border);
+    }
+    .q-num.solved { background: rgba(34,197,94,0.15); color: var(--green); border-color: rgba(34,197,94,0.4); }
+    .q-meta { flex: 1; }
+    .q-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+    .q-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .q-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .q-tag {
+      font-size: 11px; padding: 2px 7px; border-radius: 4px;
+      font-weight: 600; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border);
+    }
+    .q-tag.kw { background: rgba(14,165,233,0.12); color: var(--primary-light); border-color: rgba(14,165,233,0.3); }
+
+    /* ── 힌트 영역 ── */
+    .hint-section {
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      background: rgba(251,191,36,0.04);
+    }
+    .hint-label {
+      font-size: 11px; font-weight: 700; color: var(--yellow);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .hint-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── 기대 결과 ── */
+    .expect-section {
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      background: rgba(99,102,241,0.04);
+    }
+    .expect-label {
+      font-size: 11px; font-weight: 700; color: #a5b4fc;
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+    }
+    .expect-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-family: monospace; }
+    .expect-table th {
+      background: var(--surface2); padding: 6px 10px; text-align: left;
+      border: 1px solid var(--border); color: var(--text-dim); font-weight: 600;
+    }
+    .expect-table td { padding: 6px 10px; border: 1px solid var(--border); color: var(--text-muted); }
+    .expect-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .expect-more { font-size: 11px; color: var(--text-dim); margin-top: 6px; font-style: italic; }
+
+    /* ── 정답 토글 ── */
+    .answer-toggle {
+      width: 100%; padding: 11px 18px;
+      display: flex; align-items: center; gap: 8px;
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: var(--text-dim);
+      text-align: left; transition: all 0.15s;
+      border-top: 1px solid var(--border);
+    }
+    .answer-toggle:hover { color: var(--primary-light); background: rgba(14,165,233,0.04); }
+    .answer-toggle.open  { color: var(--primary-light); background: rgba(14,165,233,0.06); }
+    .toggle-arrow { margin-left: auto; transition: transform 0.2s; font-size: 11px; }
+    .answer-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+    .answer-body { display: none; }
+    .answer-body.open { display: block; }
+
+    /* ── 코드 블록 ── */
+    .code-block { background: #0d1117; border-top: 1px solid var(--border); }
+    .code-header {
+      background: var(--surface2); padding: 7px 16px; font-size: 12px;
+      color: var(--text-dim); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-block pre {
+      padding: 16px 20px; overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 13px; line-height: 1.75; margin: 0;
+    }
+    .kw  { color: #c792ea; font-weight: 600; }
+    .fn  { color: #82aaff; }
+    .str { color: #4ade80; }
+    .num { color: #fb923c; }
+    .cmt { color: #64748b; font-style: italic; }
+    .tbl { color: #22d3ee; }
+    .col { color: #facc15; }
+    .op  { color: #f87171; }
+
+    /* ── 풀이 설명 ── */
+    .answer-explain {
+      padding: 14px 18px; border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+    .explain-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .explain-list { display: flex; flex-direction: column; gap: 5px; }
+    .explain-item { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
+    .explain-kw {
+      font-family: monospace; font-size: 11px; font-weight: 700;
+      padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;
+      background: var(--surface2); color: var(--primary-light); border: 1px solid var(--border);
+    }
+    .explain-text { color: var(--text-muted); line-height: 1.5; }
+
+    /* ── 콜아웃 ── */
+    .callout {
+      border-radius: 8px; padding: 11px 14px; margin: 10px 0;
+      font-size: 13px; display: flex; gap: 10px;
+    }
+    .callout-tip  { background: rgba(74,222,128,0.07); border-left: 3px solid var(--green); }
+    .callout-warn { background: rgba(250,204,21,0.07); border-left: 3px solid var(--yellow); }
+    .callout-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .callout p { margin: 0; color: var(--text-muted); }
+    .callout strong { color: var(--text); }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 22px; margin-bottom: 14px;
+    }
+
+    code {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 6px; font-family: monospace; font-size: 12.5px; color: var(--cyan);
+    }
+
+    /* ── 테마 토글 ── */
+    .theme-switch-wrap {
+      margin-top: auto; flex-shrink: 0; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .theme-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .theme-switch input { display: none; }
+    .theme-slider {
+      position: absolute; inset: 0; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .theme-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; top: 3px; background: var(--primary); border-radius: 50%; transition: transform 0.2s;
+    }
+    .theme-switch input:checked + .theme-slider { background: #ddd8ff; border-color: #a899f8; }
+    .theme-switch input:checked + .theme-slider::before { transform: translateX(22px); }
+    .theme-icon { font-size: 15px; line-height: 1; color: var(--text-muted); }
+
+    /* ── 라이트 모드 ── */
+    body.light {
+      --bg: #f0f2f7; --surface: #ffffff; --surface2: #e4e7f0;
+      --border: #cdd1de; --text: #111827; --text-muted: #374151; --text-dim: #6b7280;
+      --primary: #0284c7; --primary-light: #0369a1;
+      --green: #16a34a; --yellow: #d97706;
+      --blue: #4f46e5; --orange: #ea580c; --cyan: #0d9488;
+    }
+    body.light .code-block { background: #dde0eb; }
+    body.light .code-block pre { background: #dde0eb; color: #111827; }
+    body.light .kw  { color: #6d28d9; }
+    body.light .fn  { color: #1d4ed8; }
+    body.light .str { color: #15803d; }
+    body.light .num { color: #c2410c; }
+    body.light .cmt { color: #6b7280; }
+    body.light .tbl { color: #0891b2; }
+    body.light .col { color: #b45309; }
+    body.light .op  { color: #b91c1c; }
+    body.light .hero h1 { background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #000; }
+    body.light .answer-explain { background: rgba(0,0,0,0.02); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 24px 18px 80px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── 사이드바 ── -->
+  <aside class="sidebar">
+    <a href="../index.html" class="sidebar-back">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      허브로 돌아가기
+    </a>
+    <div class="sidebar-logo">
+      <div class="tag">강의 교안</div>
+      <h2>SELECT 실습</h2>
+    </div>
+    <nav>
+      <div class="sec">Lv 1 · 기초 SELECT</div>
+      <a href="#lv1">Q1~Q5 — 단일 테이블</a>
+      <div class="sec">Lv 2 · WHERE 조건</div>
+      <a href="#lv2">Q6~Q10 — 필터링</a>
+      <div class="sec">Lv 3 · JOIN</div>
+      <a href="#lv3">Q11~Q15 — 테이블 연결</a>
+      <div class="sec">Lv 4 · 집계</div>
+      <a href="#lv4">Q16~Q20 — GROUP BY</a>
+      <div class="sec">Lv 5 · 심화</div>
+      <a href="#lv5">Q21~Q25 — 서브쿼리·복합</a>
+    </nav>
+    <div class="sidebar-progress">
+      <div id="progress-text">0 / 25 완료</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="theme-switch-wrap">
+      <span class="theme-icon">🌙</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon">☀️</span>
+    </div>
+  </aside>
+
+  <!-- ── 메인 ── -->
+  <main class="main">
+
+    <div class="hero">
+      <div class="tag">SQL Practice</div>
+      <h1>SELECT 실습 25문제</h1>
+      <p>우리 게시판 DB(<code>board.db</code>)로 직접 풀어보는 단계별 실습입니다.
+         <code>sqlite3 board.db</code>를 열고 쿼리를 직접 입력해보세요.
+         풀어본 뒤 <strong>정답 보기</strong>로 확인하세요.</p>
+      <div class="chips">
+        <span class="chip">Lv1 기초</span>
+        <span class="chip">Lv2 WHERE</span>
+        <span class="chip">Lv3 JOIN</span>
+        <span class="chip">Lv4 집계</span>
+        <span class="chip">Lv5 심화</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:36px">
+      <div style="font-size:13px; font-weight:700; margin-bottom:8px">⚡ 시작 전 준비</div>
+      <div style="font-size:13px; color:var(--text-muted); display:flex; flex-direction:column; gap:5px">
+        <div>① seed.sql을 적용해 더미 데이터를 넣으세요: <code>sqlite3 board.db &lt; seed.sql</code></div>
+        <div>② SQLite 셸을 여세요: <code>sqlite3 board.db</code></div>
+        <div>③ 쿼리를 직접 입력해서 실행해보고, 정답과 비교하세요.</div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         Lv 1 — 기초 SELECT
+    ══════════════════════════════════════ -->
+    <div class="section" id="lv1">
+      <div class="section-header">
+        <span class="level-badge lv1">Lv 1</span>
+        <div>
+          <h2>기초 SELECT — 단일 테이블</h2>
+          <div class="sub">FROM · SELECT · ORDER BY · LIMIT</div>
+        </div>
+      </div>
+
+      <!-- Q1 -->
+      <div class="q-card" id="q1">
+        <div class="q-header">
+          <div class="q-num">1</div>
+          <div class="q-meta">
+            <div class="q-title">전체 유저 목록</div>
+            <div class="q-desc">users 테이블에서 <strong>id, username, created_at</strong> 세 컬럼을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">SELECT</span><span class="q-tag kw">FROM</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>username</th><th>created_at</th></tr>
+            <tr><td>1</td><td>alice</td><td>2024-01-05 09:00:00</td></tr>
+            <tr><td>2</td><td>bob</td><td>2024-01-08 10:30:00</td></tr>
+            <tr><td>3</td><td>carol</td><td>2024-01-10 11:00:00</td></tr>
+          </table>
+          <div class="expect-more">… 총 20행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">
+          💡 정답 보기 <span class="toggle-arrow">▼</span>
+        </button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">SELECT</span><span class="explain-text">가져올 컬럼 3개를 쉼표로 나열합니다. <code>SELECT *</code>로 전체를 가져오는 것도 가능하지만 password 컬럼까지 딸려옵니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">FROM</span><span class="explain-text">데이터를 가져올 테이블을 지정합니다. WHERE 없이 모든 행이 반환됩니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="q-card" id="q2">
+        <div class="q-header">
+          <div class="q-num">2</div>
+          <div class="q-meta">
+            <div class="q-title">최신 게시글 10개</div>
+            <div class="q-desc">posts 테이블에서 <strong>id, title, created_at</strong>을 최신순으로 10개만 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">ORDER BY</span><span class="q-tag kw">LIMIT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>created_at</th></tr>
+            <tr><td>100</td><td>SQL 베스트 프랙티스</td><td>2024-05-11 10:40:00</td></tr>
+            <tr><td>99</td><td>데이터 요약 대시보드 쿼리</td><td>2024-05-10 13:20:00</td></tr>
+          </table>
+          <div class="expect-more">… 총 10행 (id 내림차순)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">ORDER BY … DESC</span><span class="explain-text">created_at 기준 내림차순 — 최신이 위에 옵니다. <code>ASC</code>(기본값)는 오름차순입니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">LIMIT 10</span><span class="explain-text">전체 100개 중 상위 10개만 반환합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="q-card" id="q3">
+        <div class="q-header">
+          <div class="q-num">3</div>
+          <div class="q-meta">
+            <div class="q-title">댓글을 오래된 순으로</div>
+            <div class="q-desc">comments 테이블에서 <strong>id, content, created_at</strong>을 오래된 순(오름차순)으로 5개만 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">ORDER BY ASC</span><span class="q-tag kw">LIMIT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>content</th><th>created_at</th></tr>
+            <tr><td>1</td><td>정말 유익한 글이네요!</td><td>2024-01-06 10:00:00</td></tr>
+            <tr><td>2</td><td>감사합니다, 잘 배웠습니다.</td><td>2024-01-06 11:00:00</td></tr>
+          </table>
+          <div class="expect-more">… 총 5행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">content</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">ASC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">ORDER BY … ASC</span><span class="explain-text">오름차순(ASC)은 기본값이라 생략 가능하지만, 명시하면 의도가 명확합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="q-card" id="q4">
+        <div class="q-header">
+          <div class="q-num">4</div>
+          <div class="q-meta">
+            <div class="q-title">게시글 3페이지 조회</div>
+            <div class="q-desc">최신순으로 정렬했을 때 <strong>3페이지(페이지당 10개)</strong>에 해당하는 게시글의 id와 title을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">LIMIT</span><span class="q-tag kw">OFFSET</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th></tr>
+            <tr><td>80</td><td>CUBE 다차원 집계</td></tr>
+            <tr><td>79</td><td>ROLLUP으로 소계 구하기</td></tr>
+          </table>
+          <div class="expect-more">… 총 10행 (21~30번째)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>
+<span class="kw">OFFSET</span>   <span class="num">20</span>;   <span class="cmt">-- (3-1) × 10 = 20</span></pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">OFFSET</span><span class="explain-text">n페이지의 OFFSET = (n-1) × 페이지크기. 3페이지 → (3-1)×10 = 20. 앞 20개를 건너뛰고 10개를 가져옵니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="q-card" id="q5">
+        <div class="q-header">
+          <div class="q-num">5</div>
+          <div class="q-meta">
+            <div class="q-title">유저 이름 중복 없이 조회</div>
+            <div class="q-desc">comments 테이블에서 댓글을 달았던 <strong>user_id의 고유한 목록</strong>을 조회하세요. (중복 제거)</div>
+            <div class="q-tags"><span class="q-tag kw">DISTINCT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>user_id</th></tr>
+            <tr><td>1</td></tr>
+            <tr><td>2</td></tr>
+            <tr><td>3</td></tr>
+          </table>
+          <div class="expect-more">… 중복 없이 총 20행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT DISTINCT</span> <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">ORDER BY</span> <span class="col">user_id</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">DISTINCT</span><span class="explain-text">SELECT 직후에 붙여 중복 행을 제거합니다. 200개의 댓글에서 20명의 고유 user_id만 반환합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         Lv 2 — WHERE 조건
+    ══════════════════════════════════════ -->
+    <div class="section" id="lv2">
+      <div class="section-header">
+        <span class="level-badge lv2">Lv 2</span>
+        <div>
+          <h2>WHERE 조건 — 필터링</h2>
+          <div class="sub">비교 · 논리 · LIKE · BETWEEN · IN</div>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="q-card" id="q6">
+        <div class="q-header">
+          <div class="q-num">6</div>
+          <div class="q-meta">
+            <div class="q-title">특정 유저의 게시글</div>
+            <div class="q-desc"><strong>user_id가 3번</strong>인 유저(carol)의 게시글 id, title, created_at을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">WHERE =</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>created_at</th></tr>
+            <tr><td>3</td><td>인덱스란 무엇인가</td><td>2024-01-11 11:30:00</td></tr>
+            <tr><td>23</td><td>실행 계획 EXPLAIN</td><td>2024-02-24 11:00:00</td></tr>
+          </table>
+          <div class="expect-more">… 총 5행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">3</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span>;</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="q-card" id="q7">
+        <div class="q-header">
+          <div class="q-num">7</div>
+          <div class="q-meta">
+            <div class="q-title">제목에 "JOIN" 포함된 게시글</div>
+            <div class="q-desc">제목에 <strong>"JOIN"이 포함된</strong> 게시글의 id와 title을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">LIKE</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th></tr>
+            <tr><td>2</td><td>JOIN 완전 정복</td></tr>
+            <tr><td>36</td><td>자기 조인(Self Join)</td></tr>
+            <tr><td>37</td><td>CROSS JOIN 주의</td></tr>
+            <tr><td>38</td><td>NATURAL JOIN 이해</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%JOIN%'</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">%JOIN%</span><span class="explain-text">앞뒤 <code>%</code>는 "어떤 문자든 0개 이상"을 의미합니다. "JOIN"이 앞·중간·끝 어디에 있어도 매칭됩니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="q-card" id="q8">
+        <div class="q-header">
+          <div class="q-num">8</div>
+          <div class="q-meta">
+            <div class="q-title">2024년 3월에 작성된 게시글</div>
+            <div class="q-desc">created_at이 <strong>2024년 3월 한 달</strong>인 게시글 수를 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">BETWEEN</span><span class="q-tag kw">COUNT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>march_posts</th></tr>
+            <tr><td>20</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="col">march_posts</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">BETWEEN</span> <span class="str">'2024-03-01'</span> <span class="kw">AND</span> <span class="str">'2024-03-31 23:59:59'</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">BETWEEN</span><span class="explain-text">날짜도 문자열로 비교됩니다. 끝 날짜에 시간을 붙여주지 않으면 3월 31일 00:00:00까지만 포함되므로 <code>23:59:59</code>를 붙입니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="q-card" id="q9">
+        <div class="q-header">
+          <div class="q-num">9</div>
+          <div class="q-meta">
+            <div class="q-title">여러 유저의 댓글 한 번에</div>
+            <div class="q-desc">user_id가 <strong>1, 5, 10번</strong>인 유저들이 쓴 댓글의 id, content, user_id를 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">IN</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>content</th><th>user_id</th></tr>
+            <tr><td>9</td><td>서브쿼리 활용 잘 배웠습니다.</td><td>9</td></tr>
+            <tr><td>21</td><td>NULL 정렬이 이렇게 되는군요.</td><td>1</td></tr>
+          </table>
+          <div class="expect-more">… 총 30행 (각 유저 10개씩)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">content</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">IN</span> (<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>)
+<span class="kw">ORDER BY</span> <span class="col">user_id</span>, <span class="col">id</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">IN (1,5,10)</span><span class="explain-text"><code>WHERE user_id=1 OR user_id=5 OR user_id=10</code>과 동일하지만 훨씬 간결합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="q-card" id="q10">
+        <div class="q-header">
+          <div class="q-num">10</div>
+          <div class="q-meta">
+            <div class="q-title">AND + LIKE 조합</div>
+            <div class="q-desc">user_id가 <strong>1~10번이면서</strong> 제목에 <strong>"실전"이 포함된</strong> 게시글을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">AND</span><span class="q-tag kw">LIKE</span><span class="q-tag kw">BETWEEN</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>user_id</th></tr>
+            <tr><td>81</td><td>실전 쿼리: 게시판 통계</td><td>1</td></tr>
+            <tr><td>82</td><td>실전 쿼리: 유저 랭킹</td><td>2</td></tr>
+            <tr><td>83</td><td>실전 쿼리: 월별 추이</td><td>3</td></tr>
+          </table>
+          <div class="expect-more">… 총 10행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">BETWEEN</span> <span class="num">1</span> <span class="kw">AND</span> <span class="num">10</span>
+  <span class="kw">AND</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%실전%'</span>
+<span class="kw">ORDER BY</span> <span class="col">id</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">AND</span><span class="explain-text">두 조건이 모두 참인 행만 필터링합니다. BETWEEN과 LIKE를 AND로 연결했습니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         Lv 3 — JOIN
+    ══════════════════════════════════════ -->
+    <div class="section" id="lv3">
+      <div class="section-header">
+        <span class="level-badge lv3">Lv 3</span>
+        <div>
+          <h2>JOIN — 테이블 연결</h2>
+          <div class="sub">INNER JOIN · LEFT JOIN · 다중 JOIN</div>
+        </div>
+      </div>
+
+      <!-- Q11 -->
+      <div class="q-card" id="q11">
+        <div class="q-header">
+          <div class="q-num">11</div>
+          <div class="q-meta">
+            <div class="q-title">게시글 + 작성자 이름</div>
+            <div class="q-desc">게시글의 <strong>id, title</strong>과 작성자의 <strong>username</strong>을 함께 조회하세요. (최신순 10개)</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>username</th></tr>
+            <tr><td>100</td><td>SQL 베스트 프랙티스</td><td>tina</td></tr>
+            <tr><td>99</td><td>데이터 요약 대시보드 쿼리</td><td>steve</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">JOIN … ON</span><span class="explain-text">posts.user_id와 users.id가 같은 행끼리 연결합니다. INNER JOIN이라 작성자가 없는 게시글은 결과에서 제외됩니다(seed 데이터에서는 해당 없음).</span></div>
+              <div class="explain-item"><span class="explain-kw">테이블.컬럼</span><span class="explain-text">두 테이블 모두 id 컬럼이 있으므로 <code>posts.id</code>처럼 출처를 명확히 합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q12 -->
+      <div class="q-card" id="q12">
+        <div class="q-header">
+          <div class="q-num">12</div>
+          <div class="q-meta">
+            <div class="q-title">댓글 + 게시글 제목 + 댓글 작성자</div>
+            <div class="q-desc">댓글의 <strong>id, content</strong>와 해당 게시글의 <strong>title</strong>, 댓글 작성자의 <strong>username</strong>을 함께 조회하세요. (5개)</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN × 2</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>content</th><th>title</th><th>username</th></tr>
+            <tr><td>1</td><td>정말 유익한 글이네요!</td><td>SQLite 시작하기</td><td>bob</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">id</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q13 -->
+      <div class="q-card" id="q13">
+        <div class="q-header">
+          <div class="q-num">13</div>
+          <div class="q-meta">
+            <div class="q-title">alice의 게시글에 달린 댓글</div>
+            <div class="q-desc"><strong>alice</strong>가 작성한 게시글에 달린 댓글의 content와 게시글 title을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">WHERE</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>content</th><th>title</th></tr>
+            <tr><td>정말 유익한 글이네요!</td><td>SQLite 시작하기</td></tr>
+            <tr><td>감사합니다, 잘 배웠습니다.</td><td>SQLite 시작하기</td></tr>
+          </table>
+          <div class="expect-more">… alice의 게시글 5개 × 각 2개 댓글 = 총 10행</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>   <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>   <span class="tbl">users</span>.<span class="col">username</span> <span class="op">=</span> <span class="str">'alice'</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">id</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">두 번째 JOIN</span><span class="explain-text">두 번째 JOIN은 posts의 user_id로 users를 연결합니다. "게시글 작성자가 alice인 것"을 WHERE로 필터링하기 위해서입니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q14 -->
+      <div class="q-card" id="q14">
+        <div class="q-header">
+          <div class="q-num">14</div>
+          <div class="q-meta">
+            <div class="q-title">게시글 목록 + 댓글 수 (LEFT JOIN)</div>
+            <div class="q-desc">게시글 <strong>id, title</strong>과 댓글 수(<strong>comment_count</strong>)를 함께 조회하세요. 댓글이 없는 게시글도 포함합니다. (댓글 많은 순 상위 10개)</div>
+            <div class="q-tags"><span class="q-tag kw">LEFT JOIN</span><span class="q-tag kw">COUNT</span><span class="q-tag kw">GROUP BY</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>comment_count</th></tr>
+            <tr><td>1</td><td>SQLite 시작하기</td><td>2</td></tr>
+            <tr><td>2</td><td>JOIN 완전 정복</td><td>2</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">LEFT JOIN</span><span class="explain-text">댓글이 없는 게시글도 결과에 포함됩니다. INNER JOIN을 쓰면 댓글 없는 게시글이 사라집니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">COUNT(comments.id)</span><span class="explain-text">댓글이 없을 때 LEFT JOIN 결과의 comments.id는 NULL. COUNT는 NULL을 세지 않아 0이 반환됩니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q15 -->
+      <div class="q-card" id="q15">
+        <div class="q-header">
+          <div class="q-num">15</div>
+          <div class="q-meta">
+            <div class="q-title">서비스 쿼리 재현 — 게시글 목록 API</div>
+            <div class="q-desc">서비스의 <strong>GET /api/posts</strong>가 실행하는 쿼리를 그대로 작성하세요. (id, title, created_at, username, comment_count를 최신순으로)</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">ORDER BY</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>id</th><th>title</th><th>username</th><th>comment_count</th></tr>
+            <tr><td>100</td><td>SQL 베스트 프랙티스</td><td>tina</td><td>2</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답 (서비스 쿼리 그대로)</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>     <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">INNER JOIN users</span><span class="explain-text">작성자 이름을 가져오기 위해 INNER JOIN. 작성자는 항상 존재합니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">LEFT JOIN comments</span><span class="explain-text">댓글 없는 게시글도 목록에 포함해야 하므로 LEFT JOIN.</span></div>
+              <div class="explain-item"><span class="explain-kw">GROUP BY posts.id</span><span class="explain-text">LEFT JOIN으로 늘어난 행을 게시글 단위로 묶어 COUNT를 집계합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         Lv 4 — 집계
+    ══════════════════════════════════════ -->
+    <div class="section" id="lv4">
+      <div class="section-header">
+        <span class="level-badge lv4">Lv 4</span>
+        <div>
+          <h2>집계 — GROUP BY & HAVING</h2>
+          <div class="sub">COUNT · GROUP BY · HAVING</div>
+        </div>
+      </div>
+
+      <!-- Q16 -->
+      <div class="q-card" id="q16">
+        <div class="q-header">
+          <div class="q-num">16</div>
+          <div class="q-meta">
+            <div class="q-title">유저별 게시글 수</div>
+            <div class="q-desc">각 유저의 <strong>username</strong>과 작성한 <strong>게시글 수(post_count)</strong>를 게시글 많은 순으로 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN</span><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">COUNT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>username</th><th>post_count</th></tr>
+            <tr><td>alice</td><td>5</td></tr>
+            <tr><td>bob</td><td>5</td></tr>
+          </table>
+          <div class="expect-more">… 총 20행, 모두 5개씩</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q17 -->
+      <div class="q-card" id="q17">
+        <div class="q-header">
+          <div class="q-num">17</div>
+          <div class="q-meta">
+            <div class="q-title">유저별 댓글 수 — 10개 이상만</div>
+            <div class="q-desc">댓글을 <strong>10개 이상</strong> 작성한 유저의 username과 댓글 수를 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">HAVING</span><span class="q-tag kw">COUNT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>username</th><th>comment_count</th></tr>
+            <tr><td>alice</td><td>10</td></tr>
+            <tr><td>bob</td><td>10</td></tr>
+          </table>
+          <div class="expect-more">… 총 20행 (모두 10개씩)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">JOIN</span>     <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">10</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">HAVING</span><span class="explain-text">GROUP BY 이후 집계 결과에 조건을 겁니다. <code>WHERE COUNT(...) >= 10</code>은 오류입니다 — 집계 결과는 반드시 HAVING으로 필터링합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q18 -->
+      <div class="q-card" id="q18">
+        <div class="q-header">
+          <div class="q-num">18</div>
+          <div class="q-meta">
+            <div class="q-title">월별 게시글 수</div>
+            <div class="q-desc"><strong>월별(YYYY-MM)</strong> 게시글 작성 수를 최신 월부터 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">STRFTIME</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>month</th><th>post_count</th></tr>
+            <tr><td>2024-05</td><td>11</td></tr>
+            <tr><td>2024-04</td><td>20</td></tr>
+            <tr><td>2024-03</td><td>20</td></tr>
+          </table>
+          <div class="expect-more">… 총 5개월치</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="fn">STRFTIME</span>(<span class="str">'%Y-%m'</span>, <span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">month</span>,
+         <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">GROUP BY</span> <span class="fn">STRFTIME</span>(<span class="str">'%Y-%m'</span>, <span class="col">created_at</span>)
+<span class="kw">ORDER BY</span> <span class="col">month</span> <span class="kw">DESC</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">STRFTIME</span><span class="explain-text">SQLite 날짜 포맷 함수입니다. <code>'%Y-%m'</code>으로 날짜를 "2024-03" 형태로 변환해 월 단위로 그룹화합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q19 -->
+      <div class="q-card" id="q19">
+        <div class="q-header">
+          <div class="q-num">19</div>
+          <div class="q-meta">
+            <div class="q-title">게시판 전체 통계 한 줄로</div>
+            <div class="q-desc">쿼리 하나로 <strong>총 유저 수, 총 게시글 수, 총 댓글 수</strong>를 한 행으로 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">COUNT(DISTINCT)</span><span class="q-tag kw">JOIN</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>total_users</th><th>total_posts</th><th>total_comments</th></tr>
+            <tr><td>20</td><td>100</td><td>200</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">users</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_users</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">posts</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_posts</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">total_comments</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>    <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">COUNT(DISTINCT)</span><span class="explain-text">LEFT JOIN으로 행이 곱셈처럼 늘어나 단순 COUNT가 부정확해집니다. DISTINCT로 각 테이블의 고유한 id만 셉니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q20 -->
+      <div class="q-card" id="q20">
+        <div class="q-header">
+          <div class="q-num">20</div>
+          <div class="q-meta">
+            <div class="q-title">가장 먼저/늦게 가입한 유저</div>
+            <div class="q-desc"><strong>가장 먼저 가입한 유저</strong>와 <strong>가장 최근에 가입한 유저</strong>의 username과 가입일을 한 쿼리로 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">MIN</span><span class="q-tag kw">MAX</span><span class="q-tag kw">서브쿼리</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table">
+            <tr><th>username</th><th>created_at</th><th>type</th></tr>
+            <tr><td>alice</td><td>2024-01-05 09:00:00</td><td>first</td></tr>
+            <tr><td>tina</td><td>2024-02-20 10:00:00</td><td>last</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">created_at</span>, <span class="str">'first'</span> <span class="kw">AS</span> <span class="col">type</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="op">=</span> (<span class="kw">SELECT</span> <span class="fn">MIN</span>(<span class="col">created_at</span>) <span class="kw">FROM</span> <span class="tbl">users</span>)
+
+<span class="kw">UNION ALL</span>
+
+<span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">created_at</span>, <span class="str">'last'</span> <span class="kw">AS</span> <span class="col">type</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="op">=</span> (<span class="kw">SELECT</span> <span class="fn">MAX</span>(<span class="col">created_at</span>) <span class="kw">FROM</span> <span class="tbl">users</span>);</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">서브쿼리</span><span class="explain-text">WHERE절 서브쿼리로 MIN/MAX 날짜를 구해 비교합니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">UNION ALL</span><span class="explain-text">두 SELECT 결과를 세로로 이어붙입니다. UNION은 중복을 제거하지만 UNION ALL은 그대로 붙입니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════
+         Lv 5 — 심화
+    ══════════════════════════════════════ -->
+    <div class="section" id="lv5">
+      <div class="section-header">
+        <span class="level-badge lv5">Lv 5</span>
+        <div>
+          <h2>심화 — 서브쿼리 &amp; 복합 쿼리</h2>
+          <div class="sub">서브쿼리 · EXISTS · 인라인 뷰 · 복합 분석</div>
+        </div>
+      </div>
+
+      <!-- Q21 -->
+      <div class="q-card" id="q21">
+        <div class="q-header">
+          <div class="q-num">21</div>
+          <div class="q-meta">
+            <div class="q-title">댓글을 단 번도 쓰지 않은 유저</div>
+            <div class="q-desc">댓글을 <strong>한 번도 작성하지 않은</strong> 유저의 username을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">NOT EXISTS</span><span class="q-tag kw">서브쿼리</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table"><tr><th>username</th></tr><tr><td colspan="1" style="color:var(--text-dim); font-style:italic">seed 데이터에선 0행 (모든 유저가 댓글을 작성함)</td></tr></table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="kw">NOT EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span>
+  <span class="kw">FROM</span>   <span class="tbl">comments</span>
+  <span class="kw">WHERE</span>  <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+);</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">NOT EXISTS</span><span class="explain-text">서브쿼리가 한 행도 반환하지 않을 때 참입니다. 해당 유저의 댓글이 전혀 없으면 외부 쿼리 결과에 포함됩니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">SELECT 1</span><span class="explain-text">EXISTS/NOT EXISTS는 값이 아닌 행의 존재만 확인하므로 SELECT 1처럼 가벼운 표현을 씁니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q22 -->
+      <div class="q-card" id="q22">
+        <div class="q-header">
+          <div class="q-num">22</div>
+          <div class="q-meta">
+            <div class="q-title">평균보다 많은 게시글을 쓴 유저</div>
+            <div class="q-desc">전체 유저의 평균 게시글 수보다 <strong>많이 쓴 유저</strong>의 username과 게시글 수를 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">FROM절 서브쿼리</span><span class="q-tag kw">AVG</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과</div>
+          <table class="expect-table"><tr><th>username</th><th>post_count</th></tr><tr><td colspan="2" style="color:var(--text-dim); font-style:italic">seed 데이터에선 모두 5개씩이라 평균(5)과 같아 0행 / ">" 대신 ">=" 로 바꾸면 전체 20행</td></tr></table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">post_count</span>
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+           <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+  <span class="kw">FROM</span>     <span class="tbl">users</span>
+  <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+  <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+) <span class="kw">AS</span> <span class="col">stats</span>
+<span class="kw">WHERE</span> <span class="col">post_count</span> <span class="op">></span> (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">cnt</span>)
+  <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+    <span class="kw">FROM</span>     <span class="tbl">posts</span>
+    <span class="kw">GROUP BY</span> <span class="col">user_id</span>
+  )
+)
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">FROM절 서브쿼리</span><span class="explain-text">유저별 게시글 수를 먼저 구한 뒤(인라인 뷰 stats), 그 결과를 다시 WHERE로 필터링합니다. GROUP BY 결과를 WHERE로 바로 필터할 수 없어 이 패턴을 씁니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q23 -->
+      <div class="q-card" id="q23">
+        <div class="q-header">
+          <div class="q-num">23</div>
+          <div class="q-meta">
+            <div class="q-title">각 게시글의 첫 번째 댓글 작성자</div>
+            <div class="q-desc">각 게시글에서 <strong>가장 먼저 달린 댓글</strong>의 내용과 작성자 username, 게시글 title을 조회하세요. (게시글 id 순, 10개)</div>
+            <div class="q-tags"><span class="q-tag kw">서브쿼리</span><span class="q-tag kw">MIN</span><span class="q-tag kw">JOIN</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>post_title</th><th>first_comment</th><th>username</th></tr>
+            <tr><td>SQLite 시작하기</td><td>정말 유익한 글이네요!</td><td>bob</td></tr>
+            <tr><td>JOIN 완전 정복</td><td>JOIN 정말 헷갈렸는데...</td><td>alice</td></tr>
+          </table>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>  <span class="tbl">posts</span>.<span class="col">title</span>    <span class="kw">AS</span> <span class="col">post_title</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span> <span class="kw">AS</span> <span class="col">first_comment</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>   <span class="tbl">comments</span>.<span class="col">id</span> <span class="op">=</span> (
+  <span class="kw">SELECT</span> <span class="fn">MIN</span>(<span class="col">id</span>)
+  <span class="kw">FROM</span>   <span class="tbl">comments</span> <span class="col">c2</span>
+  <span class="kw">WHERE</span>  <span class="col">c2</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">comments</span>.<span class="col">post_id</span>
+)
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">10</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">상관 서브쿼리</span><span class="explain-text">외부 쿼리의 <code>comments.post_id</code>를 서브쿼리에서 참조합니다. 각 게시글마다 서브쿼리가 실행되어 그 게시글의 MIN(id) 댓글을 찾습니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q24 -->
+      <div class="q-card" id="q24">
+        <div class="q-header">
+          <div class="q-num">24</div>
+          <div class="q-meta">
+            <div class="q-title">유저 활동 종합 랭킹</div>
+            <div class="q-desc">각 유저의 <strong>게시글 수 × 2 + 댓글 수</strong>를 활동 점수로 계산해 상위 5명을 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">FROM절 서브쿼리</span><span class="q-tag kw">산술 연산</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>username</th><th>post_count</th><th>comment_count</th><th>score</th></tr>
+            <tr><td>alice</td><td>5</td><td>10</td><td>20</td></tr>
+          </table>
+          <div class="expect-more">… 상위 5명 (동점이면 알파벳 순)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>
+  <span class="tbl">u</span>.<span class="col">username</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">p</span>.<span class="col">id</span>)                       <span class="kw">AS</span> <span class="col">post_count</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">c</span>.<span class="col">id</span>)                       <span class="kw">AS</span> <span class="col">comment_count</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">p</span>.<span class="col">id</span>) <span class="op">*</span> <span class="num">2</span>
+    <span class="op">+</span> <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">c</span>.<span class="col">id</span>)                    <span class="kw">AS</span> <span class="col">score</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>    <span class="col">u</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="col">p</span> <span class="kw">ON</span> <span class="col">p</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="col">c</span> <span class="kw">ON</span> <span class="col">c</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">score</span> <span class="kw">DESC</span>, <span class="col">u</span>.<span class="col">username</span> <span class="kw">ASC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">테이블 별칭(u, p, c)</span><span class="explain-text">긴 테이블명을 짧은 별칭으로 줄여 가독성을 높입니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">산술 연산</span><span class="explain-text">SELECT절에서 집계 함수 결과에 바로 * 2 + 같은 연산을 적용할 수 있습니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">다중 ORDER BY</span><span class="explain-text">점수가 같으면 username 알파벳 순으로 정렬합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q25 -->
+      <div class="q-card" id="q25">
+        <div class="q-header">
+          <div class="q-num">25</div>
+          <div class="q-meta">
+            <div class="q-title">최종 보스 — 인기 게시글 종합 분석</div>
+            <div class="q-desc">2024년 3월 이후 작성된 게시글 중, 댓글이 2개 이상인 게시글의 <strong>title, 작성자, 댓글 수</strong>를 댓글 많은 순 상위 5개로 조회하세요.</div>
+            <div class="q-tags"><span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">WHERE</span><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">HAVING</span><span class="q-tag kw">ORDER BY</span><span class="q-tag kw">LIMIT</span></div>
+          </div>
+        </div>
+        <div class="expect-section">
+          <div class="expect-label">기대 결과 (일부)</div>
+          <table class="expect-table">
+            <tr><th>title</th><th>author</th><th>comment_count</th></tr>
+            <tr><td>GROUP BY 완전 이해</td><td>frank</td><td>2</td></tr>
+          </table>
+          <div class="expect-more">… 최대 5행 (3월 이후 + 댓글 2개 이상)</div>
+        </div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">💡 정답 보기 <span class="toggle-arrow">▼</span></button>
+        <div class="answer-body">
+          <div class="code-block">
+            <div class="code-header"><div class="dot" style="background:#ff5f57"></div><div class="dot" style="background:#febc2e"></div><div class="dot" style="background:#28c840"></div>정답</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>         <span class="kw">AS</span> <span class="col">author</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>)     <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-03-01'</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+          </div>
+          <div class="answer-explain">
+            <div class="explain-title">풀이 — 실행 순서로 이해하기</div>
+            <div class="explain-list">
+              <div class="explain-item"><span class="explain-kw">① FROM+JOIN</span><span class="explain-text">posts, users, comments 세 테이블을 연결합니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">② WHERE</span><span class="explain-text">3월 이후 게시글만 남깁니다. (행 단위 필터)</span></div>
+              <div class="explain-item"><span class="explain-kw">③ GROUP BY</span><span class="explain-text">게시글 id 기준으로 그룹화해 댓글 수를 집계합니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">④ HAVING</span><span class="explain-text">집계 결과 중 댓글 2개 이상인 그룹만 남깁니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">⑤ ORDER BY</span><span class="explain-text">댓글 많은 순으로 정렬합니다.</span></div>
+              <div class="explain-item"><span class="explain-kw">⑥ LIMIT</span><span class="explain-text">상위 5개만 반환합니다.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+  /* 정답 토글 */
+  function toggleAnswer(btn) {
+    const body = btn.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+
+    /* 진행률 업데이트 */
+    if (!isOpen) {
+      const num = btn.closest('.q-card').querySelector('.q-num');
+      num.classList.add('solved');
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = document.querySelectorAll('.q-card').length;
+    const solved = document.querySelectorAll('.q-num.solved').length;
+    document.getElementById('progress-text').textContent = `${solved} / ${total} 완료`;
+    document.getElementById('progress-fill').style.width = `${(solved / total) * 100}%`;
+  }
+
+  /* 테마 토글 */
+  document.getElementById('themeToggle').addEventListener('change', function () {
+    document.body.classList.toggle('light', this.checked);
+  });
+
+  /* 스크롤 사이드바 활성화 */
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
