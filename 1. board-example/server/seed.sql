@@ -342,4 +342,3 @@ SELECT '=== 삽입 완료 ===';
 SELECT 'users:', COUNT(*) FROM users;
 SELECT 'posts:', COUNT(*) FROM posts;
 SELECT 'comments:', COUNT(*) FROM comments;
-EOF
