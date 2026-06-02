@@ -1,169 +1,233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dev-lab</title>
-  <style>
-    :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #242736;
-      --border: #2e3148;
-      --primary: #0ea5e9;
-      --primary-light: #38bdf8;
-      --text: #f1f5f9;
-      --text-muted: #b0bbd0;
-      --text-dim: #7d8fa3;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dev-lab</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #242736;
+        --border: #2e3148;
+        --primary: #0ea5e9;
+        --primary-light: #38bdf8;
+        --text: #f1f5f9;
+        --text-muted: #b0bbd0;
+        --text-dim: #7d8fa3;
+      }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 24px;
-    }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+      }
 
-    .logo {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-dim);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
+      .logo {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-dim);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
 
-    h1 {
-      font-size: 36px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #fff 40%, var(--primary-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 10px;
-    }
+      h1 {
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff 40%, var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+      }
 
-    .subtitle {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-bottom: 56px;
-    }
+      .subtitle {
+        font-size: 15px;
+        color: var(--text-muted);
+        margin-bottom: 56px;
+      }
 
-    .projects {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      width: 100%;
-      max-width: 560px;
-    }
+      .projects {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        width: 100%;
+        max-width: 560px;
+      }
 
-    .project-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.2s, transform 0.2s;
-    }
+      .project-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 24px;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+      }
 
-    .project-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
+      .project-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+      }
 
-    .project-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+      .project-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
 
-    .project-num {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--primary-light);
-      background: rgba(14,165,233,0.1);
-      border: 1px solid rgba(14,165,233,0.2);
-      border-radius: 6px;
-      padding: 4px 8px;
-      white-space: nowrap;
-    }
+      .project-num {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--primary-light);
+        background: rgba(14, 165, 233, 0.1);
+        border: 1px solid rgba(14, 165, 233, 0.2);
+        border-radius: 6px;
+        padding: 4px 8px;
+        white-space: nowrap;
+      }
 
-    .project-info h2 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 3px;
-    }
+      .project-info h2 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
 
-    .project-info p {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
+      .project-info p {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
 
-    .arrow {
-      color: var(--text-dim);
-      flex-shrink: 0;
-      transition: color 0.2s, transform 0.2s;
-    }
+      .arrow {
+        color: var(--text-dim);
+        flex-shrink: 0;
+        transition:
+          color 0.2s,
+          transform 0.2s;
+      }
 
-    .project-card:hover .arrow {
-      color: var(--primary-light);
-      transform: translateX(3px);
-    }
+      .project-card:hover .arrow {
+        color: var(--primary-light);
+        transform: translateX(3px);
+      }
 
-    footer {
-      margin-top: 56px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
+      footer {
+        margin-top: 56px;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
 
-    footer a {
-      color: var(--text-dim);
-      text-decoration: none;
-    }
+      footer a {
+        color: var(--text-dim);
+        text-decoration: none;
+      }
 
-    footer a:hover {
-      color: var(--primary-light);
-    }
-  </style>
-</head>
-<body>
+      footer a:hover {
+        color: var(--primary-light);
+      }
 
-  <div class="logo">kyumin1227 / dev-lab</div>
-  <h1>dev-lab</h1>
-  <p class="subtitle">직접 만들고 분석하며 배우는 개발 실습 모음</p>
+      /* ── 테마 토글 ── */
+      .theme-btn {
+        position: fixed;
+        top: 20px;
+        right: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 10px;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        transition: border-color 0.2s;
+      }
+      .theme-btn:hover {
+        border-color: var(--primary);
+      }
 
-  <div class="projects">
+      /* ── 라이트 모드 ── */
+      body.light {
+        --bg: #f0f2f7;
+        --surface: #ffffff;
+        --surface2: #e4e7f0;
+        --border: #cdd1de;
+        --text: #111827;
+        --text-muted: #374151;
+        --text-dim: #6b7280;
+        --primary: #0284c7;
+        --primary-light: #0369a1;
+      }
+      body.light h1 {
+        background: none;
+        -webkit-background-clip: unset;
+        -webkit-text-fill-color: var(--text);
+        background-clip: unset;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-btn" id="themeToggle" title="테마 전환">🌙</button>
 
-    <a href="1. board-example/index.html" class="project-card">
-      <div class="project-left">
-        <span class="project-num">01</span>
-        <div class="project-info">
-          <h2>게시판으로 배우는 DB & SQL</h2>
-          <p>ERD 설계 · SELECT 실습 25문제 · 서비스 실사용 쿼리 분석</p>
+    <div class="logo">kyumin1227 / dev-lab</div>
+    <h1>dev-lab</h1>
+    <p class="subtitle">직접 만들고 분석하며 배우는 개발 실습 모음</p>
+
+    <div class="projects">
+      <a href="1. board-example/index.html" class="project-card">
+        <div class="project-left">
+          <span class="project-num">01</span>
+          <div class="project-info">
+            <h2>게시판으로 배우는 DB & SQL</h2>
+            <p>ERD 설계 · SELECT 실습 25문제 · 서비스 실사용 쿼리 분석</p>
+          </div>
         </div>
-      </div>
-      <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>
-    </a>
+        <svg
+          class="arrow"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
 
-  </div>
+    <footer>
+      <a href="https://github.com/kyumin1227/dev-lab" target="_blank">GitHub</a>
+    </footer>
 
-  <footer>
-    <a href="https://github.com/kyumin1227/dev-lab" target="_blank">GitHub</a>
-  </footer>
-
-</body>
+    <script>
+      const btn = document.getElementById("themeToggle");
+      if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light");
+        btn.textContent = "☀️";
+      }
+      btn.addEventListener("click", () => {
+        const isLight = document.body.classList.toggle("light");
+        btn.textContent = isLight ? "☀️" : "🌙";
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+      });
+    </script>
+  </body>
 </html>
