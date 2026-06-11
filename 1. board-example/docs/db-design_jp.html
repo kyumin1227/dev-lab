@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>데이터베이스 설계 — 게시판으로 배우기</title>
+    <title>掲示板で学ぶデータベース設計</title>
     <style>
       :root {
         --bg: #0f1117;
@@ -32,7 +32,7 @@
       body {
         background: var(--bg);
         color: var(--text);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
         line-height: 1.7;
       }
 
@@ -41,7 +41,7 @@
         min-height: 100vh;
       }
 
-      /* ── 사이드바 ── */
+      /* ── サイドバー ── */
       .sidebar {
         width: 256px;
         background: var(--surface);
@@ -112,14 +112,14 @@
         font-weight: 600;
       }
 
-      /* ── 메인 ── */
+      /* ── メイン ── */
       .main {
         margin-left: 256px;
         max-width: 880px;
         padding: 48px 48px 120px;
       }
 
-      /* ── 섹션 ── */
+      /* ── セクション ── */
       .section {
         margin-bottom: 80px;
       }
@@ -164,7 +164,7 @@
         font-size: 14.5px;
       }
 
-      /* ── 히어로 ── */
+      /* ── ヒーロー ── */
       .hero {
         background: linear-gradient(135deg, rgba(124, 106, 247, 0.15), rgba(34, 211, 238, 0.08));
         border: 1px solid rgba(124, 106, 247, 0.3);
@@ -207,7 +207,7 @@
         color: var(--text-muted);
       }
 
-      /* ── 카드 ── */
+      /* ── カード ── */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -216,7 +216,7 @@
         margin-bottom: 16px;
       }
 
-      /* ── 코드 블록 ── */
+      /* ── コードブロック ── */
       .code-block {
         background: #0d1117;
         border: 1px solid var(--border);
@@ -242,7 +242,7 @@
       .code-block pre {
         padding: 18px 20px;
         overflow-x: auto;
-        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", "BIZ UDゴシック", "Osaka-mono", monospace;
         font-size: 13.5px;
         line-height: 1.75;
         margin: 0;
@@ -274,7 +274,7 @@
         color: #f87171;
       }
 
-      /* ── 콜아웃 ── */
+      /* ── コールアウト ── */
       .callout {
         border-radius: 8px;
         padding: 14px 18px;
@@ -308,7 +308,7 @@
         color: var(--text);
       }
 
-      /* ── 아키텍처 다이어그램 ── */
+      /* ── アーキテクチャ図 ── */
       .arch {
         display: flex;
         align-items: stretch;
@@ -377,7 +377,7 @@
         color: var(--primary);
       }
 
-      /* ── 흐름 단계 ── */
+      /* ── フロー段階 ── */
       .flow {
         display: flex;
         flex-direction: column;
@@ -465,7 +465,7 @@
         color: var(--green);
       }
 
-      /* ── 테이블 다이어그램 ── */
+      /* ── テーブル図 ── */
       .table-diagram {
         display: flex;
         gap: 16px;
@@ -548,7 +548,7 @@
         border: 1px solid rgba(100, 116, 139, 0.3);
       }
 
-      /* ── 관계 다이어그램 ── */
+      /* ── リレーション図 ── */
       .rel-diagram {
         display: flex;
         align-items: center;
@@ -608,7 +608,7 @@
         color: var(--text-dim);
       }
 
-      /* ── ERD 임베드 ── */
+      /* ── ERD 埋め込み ── */
       .erd-wrap {
         border: 1px solid var(--border);
         border-radius: 10px;
@@ -636,7 +636,7 @@
         width: 100%;
       }
 
-      /* ── 비교 테이블 ── */
+      /* ── 比較テーブル ── */
       table.compare {
         width: 100%;
         border-collapse: collapse;
@@ -660,7 +660,7 @@
         background: rgba(255, 255, 255, 0.02);
       }
 
-      /* ── 정규화 비교 ── */
+      /* ── 正規化比較 ── */
       .norm-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -747,7 +747,7 @@
         padding: 0 2px;
       }
 
-      /* ── 실습 박스 ── */
+      /* ── 実習ボックス ── */
       .practice {
         background: rgba(124, 106, 247, 0.08);
         border: 1px solid rgba(124, 106, 247, 0.3);
@@ -772,7 +772,7 @@
         font-size: 14px;
       }
 
-      /* ── 체크리스트 ── */
+      /* ── チェックリスト ── */
       .checklist {
         margin: 12px 0;
       }
@@ -816,7 +816,7 @@
         color: var(--green);
       }
 
-      /* ── 반응형 ── */
+      /* ── レスポンシブ ── */
       @media (max-width: 768px) {
         .sidebar {
           display: none;
@@ -845,7 +845,7 @@
         }
       }
 
-      /* ── 테마 토글 ── */
+      /* ── テーマ切り替え ── */
       .theme-switch-wrap {
         margin-top: auto;
         flex-shrink: 0;
@@ -897,7 +897,7 @@
         color: var(--text-muted);
       }
 
-      /* ── 라이트 모드 ── */
+      /* ── ライトモード ── */
       body.light {
         --bg: #f0f2f7;
         --surface: #ffffff;
@@ -948,7 +948,7 @@
         color: #b91c1c;
       }
 
-      /* 라이트 모드 전용 */
+      /* ライトモード専用 */
       body.light .hero h1 {
         background: none;
         -webkit-background-clip: unset;
@@ -956,7 +956,7 @@
         color: #000000;
       }
 
-      /* 섹션 1 — 아키텍처 다이어그램 */
+      /* セクション 1 — アーキテクチャ図 */
       body.light .arch-col.frontend {
         background: rgba(109, 40, 217, 0.1);
       }
@@ -976,7 +976,7 @@
         color: #16a34a;
       }
 
-      /* 섹션 2 — 요청 흐름 */
+      /* セクション 2 — リクエストフロー */
       body.light .flow-step.fe {
         border-left-color: #7c3aed;
       }
@@ -1014,117 +1014,135 @@
   </head>
   <body>
     <div class="layout">
-      <!-- ── 사이드바 ── -->
-      <aside class="sidebar">
-        <a href="../index.html" class="sidebar-back">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          허브로 돌아가기
-        </a>
-        <div class="sidebar-logo">
-          <div class="tag">강의 교안</div>
-          <h2>데이터베이스 설계</h2>
-        </div>
-        <nav>
-          <div class="sec">개념</div>
-          <a href="#s1">① 프론트 · 백엔드 · DB 관계</a>
-          <a href="#s2">② 요청 흐름 따라가기</a>
-          <a href="#s3">③ 왜 DB를 분리하나?</a>
+    <!-- ── サイドバー ── -->
+    <aside class="sidebar">
+      <a href="../index_jp.html" class="sidebar-back">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        学習一覧へ戻る
+      </a>
 
-          <div class="sec">설계</div>
-          <a href="#s-key">④ 키(Key) 완전 정복</a>
-          <a href="#s-type">⑤ 데이터 타입</a>
-          <a href="#s4">⑥ ERD — 설계도 읽기</a>
-          <a href="#s5">⑦ 테이블 구조 분석</a>
-          <a href="#s6">⑧ 관계 — 1:N 이해</a>
-          <a href="#s7">⑨ 외래키와 무결성</a>
+      <div class="sidebar-logo">
+        <div class="tag">講義資料</div>
+        <h2>データベース設計</h2>
+      </div>
 
-          <div class="sec">실습</div>
-          <a href="#s8">⑩ 좋아요 기능 설계하기</a>
-          <a href="#s9">⑪ 설계 원칙 정리</a>
-          <a href="#s-norm">⑫ 정규화 기초</a>
-        </nav>
-        <div class="theme-switch-wrap">
-          <span class="theme-icon">🌙</span>
-          <label class="theme-switch">
-            <input type="checkbox" id="themeToggle" />
-            <span class="theme-slider"></span>
-          </label>
-          <span class="theme-icon">☀️</span>
-        </div>
-      </aside>
+      <nav>
+        <div class="sec">基礎知識</div>
+        <a href="#s1">① フロントエンド・バックエンド・DBの関係</a>
+        <a href="#s2">② リクエストの流れを追う</a>
+        <a href="#s3">③ なぜDBを分離するのか？</a>
 
-      <!-- ── 메인 ── -->
+        <div class="sec">設計</div>
+        <a href="#s4">④ キー（Key）完全攻略</a>
+        <a href="#s5">⑤ データ型</a>
+        <a href="#s6">⑥ ERD ― 設計図の読み方</a>
+        <a href="#s7">⑦ テーブル構造の分析</a>
+        <a href="#s8">⑧ リレーション ― 1:Nを理解する</a>
+        <a href="#s9">⑨ 外部キーと整合性</a>
+
+        <div class="sec">実習</div>
+        <a href="#s10">⑩ いいね機能を設計してみよう</a>
+        <a href="#s11">⑪ 設計原則のまとめ</a>
+        <a href="#s12">⑫ 正規化の基礎</a>
+      </nav>
+
+      <div class="theme-switch-wrap">
+        <span class="theme-icon">🌙</span>
+        <label class="theme-switch">
+          <input type="checkbox" id="themeToggle" />
+          <span class="theme-slider"></span>
+        </label>
+        <span class="theme-icon">☀️</span>
+      </div>
+    </aside>
+
+      <!-- ── メイン ── -->
       <main class="main">
-        <!-- 히어로 -->
+        <!-- ヒーロー -->
         <div class="hero">
           <div class="tag">Database Design</div>
-          <h1>데이터베이스 설계,<br />게시판으로 이해하기</h1>
+
+          <h1>
+            データベース設計を<br />
+            掲示板で学ぶ
+          </h1>
+
           <p>
-            직접 만든 게시판을 해부하면서 프론트엔드·백엔드·데이터베이스가 어떻게 연결되고, 테이블을 왜 그렇게
-            설계하는지 이해합니다.
+            自分で作成した掲示板を題材に、
+            フロントエンド・バックエンド・データベースがどのようにつながっているのか、
+            またテーブルをなぜそのように設計するのかを理解します。
           </p>
+
           <div class="chips">
             <span class="chip">React</span>
             <span class="chip">Express</span>
             <span class="chip">SQLite</span>
             <span class="chip">ERD</span>
-            <span class="chip">1:N 관계</span>
-            <span class="chip">외래키</span>
+            <span class="chip">1:N関係</span>
+            <span class="chip">外部キー</span>
           </div>
         </div>
 
-        <!-- ① 프론트 · 백엔드 · DB 관계 -->
+        <!-- ① フロントエンド・バックエンド・DBの関係 -->
         <div class="section" id="s1">
           <div class="section-header">
             <div class="section-num">1</div>
             <div>
-              <h2>프론트엔드 · 백엔드 · DB의 관계</h2>
-              <div class="sub">세 영역이 각자 하는 일</div>
+              <h2>フロントエンド・バックエンド・DBの関係</h2>
+              <div class="sub">それぞれの役割を理解する</div>
             </div>
           </div>
 
           <p>
-            모든 웹 서비스는 이 세 영역으로 나뉩니다. 각자 <span class="hl">역할이 명확하게 분리</span>되어 있습니다.
+            すべてのWebサービスは、この3つの領域で構成されています。
+            それぞれの<span class="hl">役割は明確に分かれています</span>。
           </p>
 
           <div class="arch">
             <div class="arch-col frontend">
               <div class="arch-icon">🖥️</div>
-              <div class="arch-label tag-fe">프론트엔드</div>
-              <div class="arch-sub">화면을 그린다</div>
+              <div class="arch-label tag-fe">フロントエンド</div>
+              <div class="arch-sub">画面を表示する</div>
               <div class="arch-tech">React</div>
               <div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 4px">
-                사용자가 보는 UI<br />버튼, 입력폼, 목록
+                ユーザーが見るUI<br />
+                ボタン・入力フォーム・一覧表示
               </div>
             </div>
+
             <div class="arch-arrow">
               <span style="font-size: 10px">HTTP</span>
               <span class="arr">⇄</span>
               <span style="font-size: 10px">API</span>
             </div>
+
             <div class="arch-col backend">
               <div class="arch-icon">⚙️</div>
-              <div class="arch-label tag-be">백엔드</div>
-              <div class="arch-sub">로직을 처리한다</div>
+              <div class="arch-label tag-be">バックエンド</div>
+              <div class="arch-sub">処理を実行する</div>
               <div class="arch-tech">Express</div>
               <div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 4px">
-                요청 검증, 인증<br />비즈니스 로직
+                リクエストの検証・認証<br />
+                ビジネスロジック
               </div>
             </div>
+
             <div class="arch-arrow">
               <span style="font-size: 10px">SQL</span>
               <span class="arr">⇄</span>
-              <span style="font-size: 10px">쿼리</span>
+              <span style="font-size: 10px">クエリ</span>
             </div>
+
             <div class="arch-col database">
               <div class="arch-icon">🗄️</div>
-              <div class="arch-label tag-db">데이터베이스</div>
-              <div class="arch-sub">데이터를 저장한다</div>
+              <div class="arch-label tag-db">データベース</div>
+              <div class="arch-sub">データを保存する</div>
               <div class="arch-tech">SQLite</div>
               <div style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 4px">
-                영구 저장<br />구조화된 데이터
+                永続的な保存<br />
+                構造化されたデータ
               </div>
             </div>
           </div>
@@ -1132,97 +1150,132 @@
           <div class="card" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center">
             <div>
               <div style="font-size: 13px; font-weight: 700; color: var(--primary-light); margin-bottom: 6px">
-                프론트엔드만 있으면
+                フロントエンドだけでは
               </div>
-              <div style="font-size: 13px; color: var(--text-muted)">새로고침하면<br />데이터 사라짐</div>
+              <div style="font-size: 13px; color: var(--text-muted)">
+                ページを更新すると<br />
+                データが消えてしまう
+              </div>
             </div>
+
             <div>
-              <div style="font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 6px">DB만 있으면</div>
-              <div style="font-size: 13px; color: var(--text-muted)">화면을<br />그릴 수 없음</div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 6px">
+                DBだけでは
+              </div>
+              <div style="font-size: 13px; color: var(--text-muted)">
+                画面を<br />
+                表示できない
+              </div>
             </div>
+
             <div>
-              <div style="font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 6px">셋 다 있어야</div>
-              <div style="font-size: 13px; color: var(--text-muted)">완전한<br />서비스 완성</div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 6px">
+                3つすべて揃って初めて
+              </div>
+              <div style="font-size: 13px; color: var(--text-muted)">
+                完全な<br />
+                サービスになる
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- ② 요청 흐름 -->
+        <!-- ② リクエストの流れ -->
         <div class="section" id="s2">
           <div class="section-header">
             <div class="section-num">2</div>
             <div>
-              <h2>요청 흐름 따라가기</h2>
-              <div class="sub">"글쓰기" 버튼 하나를 눌렀을 때 무슨 일이 일어나나</div>
+              <h2>リクエストの流れを追ってみよう</h2>
+              <div class="sub">「投稿する」ボタンを1回押したとき、何が起こるのか</div>
             </div>
           </div>
 
           <p>
-            추상적인 설명 대신, <span class="hl">게시글 작성 하나</span>를 단계별로 따라가면 세 영역의 역할이
-            명확해집니다.
+            抽象的な説明ではなく、
+            <span class="hl">投稿の作成</span>を例に順番に追っていくことで、
+            フロントエンド・バックエンド・DBそれぞれの役割が明確になります。
           </p>
 
           <div class="flow">
             <div class="flow-step fe">
               <div class="flow-num">1</div>
               <div class="flow-content">
-                <div class="flow-title">사용자가 제목·내용 입력 후 등록 버튼 클릭</div>
+                <div class="flow-title">ユーザーがタイトル・内容を入力して投稿ボタンをクリック</div>
                 <div class="flow-desc">
-                  React의 <code>PostCreate.jsx</code>가 입력값을 state로 관리하다가 submit 이벤트 감지
+                  React の <code>PostCreate.jsx</code> が入力値を state で管理し、
+                  submitイベントを検知します。
                 </div>
               </div>
               <div class="flow-tag">Frontend</div>
             </div>
+
             <div class="flow-step fe">
               <div class="flow-num">2</div>
               <div class="flow-content">
-                <div class="flow-title">axios.post('/api/posts', data) 호출</div>
-                <div class="flow-desc">HTTP POST 요청을 백엔드로 전송. Authorization 헤더에 JWT 토큰 포함</div>
+                <div class="flow-title">axios.post('/api/posts', data) を実行</div>
+                <div class="flow-desc">
+                  HTTP POSTリクエストをバックエンドへ送信。
+                  AuthorizationヘッダーにはJWTトークンが含まれます。
+                </div>
               </div>
               <div class="flow-tag">Frontend</div>
             </div>
+
             <div class="flow-step be">
               <div class="flow-num">3</div>
               <div class="flow-content">
-                <div class="flow-title">Express가 요청 수신 → JWT 토큰 검증</div>
+                <div class="flow-title">Expressがリクエストを受信 → JWTトークンを検証</div>
                 <div class="flow-desc">
-                  <code>middleware.js</code>의 authenticate 함수가 토큰을 확인. 유효하지 않으면 401 반환
+                  <code>middleware.js</code> の authenticate関数がトークンを確認します。
+                  無効な場合は401エラーを返します。
                 </div>
               </div>
               <div class="flow-tag">Backend</div>
             </div>
+
             <div class="flow-step be">
               <div class="flow-num">4</div>
               <div class="flow-content">
-                <div class="flow-title">제목·내용 유효성 검사</div>
-                <div class="flow-desc"><code>routes/posts.js</code>에서 빈 값이면 400 에러 반환</div>
-              </div>
-              <div class="flow-tag">Backend</div>
-            </div>
-            <div class="flow-step db">
-              <div class="flow-num">5</div>
-              <div class="flow-content">
-                <div class="flow-title">INSERT INTO posts ... SQL 실행</div>
-                <div class="flow-desc">SQLite에 게시글 데이터 저장. DB가 id를 자동 부여하고 created_at 기록</div>
-              </div>
-              <div class="flow-tag">Database</div>
-            </div>
-            <div class="flow-step be">
-              <div class="flow-num">6</div>
-              <div class="flow-content">
-                <div class="flow-title">저장 완료 → postId 응답 반환</div>
+                <div class="flow-title">タイトル・内容のバリデーションを実施</div>
                 <div class="flow-desc">
-                  <code>{ message: "게시글 작성 완료", postId: 5 }</code> 형태로 프론트에 전달
+                  <code>routes/posts.js</code> で入力内容を確認し、
+                  空欄の場合は400エラーを返します。
                 </div>
               </div>
               <div class="flow-tag">Backend</div>
             </div>
+
+            <div class="flow-step db">
+              <div class="flow-num">5</div>
+              <div class="flow-content">
+                <div class="flow-title">INSERT INTO posts ... SQLを実行</div>
+                <div class="flow-desc">
+                  SQLiteに投稿データを保存します。
+                  DBが自動でidを付与し、created_atも記録します。
+                </div>
+              </div>
+              <div class="flow-tag">Database</div>
+            </div>
+
+            <div class="flow-step be">
+              <div class="flow-num">6</div>
+              <div class="flow-content">
+                <div class="flow-title">保存完了 → postIdを返却</div>
+                <div class="flow-desc">
+                  <code>{ message: "投稿が完了しました", postId: 5 }</code>
+                  のような形式でフロントエンドへ返します。
+                </div>
+              </div>
+              <div class="flow-tag">Backend</div>
+            </div>
+
             <div class="flow-step fe">
               <div class="flow-num">7</div>
               <div class="flow-content">
-                <div class="flow-title">게시글 상세 페이지로 이동</div>
+                <div class="flow-title">投稿詳細ページへ移動</div>
                 <div class="flow-desc">
-                  React Router가 <code>/posts/5</code>로 navigate. 새 페이지에서 방금 저장한 글 조회
+                  React Router が <code>/posts/5</code> へ遷移し、
+                  新しいページで先ほど保存した投稿を表示します。
                 </div>
               </div>
               <div class="flow-tag">Frontend</div>
@@ -1232,100 +1285,118 @@
           <div class="callout callout-tip">
             <div class="callout-icon">💡</div>
             <p>
-              <strong>핵심:</strong> 프론트는 "보여주기", 백엔드는 "검증과 조율", DB는 "저장"만 합니다. 각자 자기 역할
-              밖의 일은 하지 않습니다.
+              <strong>ポイント：</strong>
+              フロントエンドは「表示する役割」、
+              バックエンドは「検証と制御を行う役割」、
+              データベースは「保存する役割」を担当します。
+              それぞれが自分の役割に専念することで、
+              保守しやすいシステムになります。
             </p>
           </div>
         </div>
 
-        <!-- ③ 왜 분리하나 -->
+        <!-- ③ なぜDBを分けるのか -->
         <div class="section" id="s3">
           <div class="section-header">
             <div class="section-num">3</div>
             <div>
-              <h2>왜 DB를 별도로 분리하나?</h2>
-              <div class="sub">파일 저장과의 차이</div>
+              <h2>なぜDBを別に分けるのか？</h2>
+              <div class="sub">ファイル保存との違い</div>
             </div>
           </div>
 
-          <p>프론트에서 localStorage에 저장하거나, 파일에 JSON으로 저장하면 안 될까요?</p>
+          <p>
+            フロントエンドで localStorage に保存したり、
+            JSONファイルとして保存したりするだけではダメなのでしょうか？
+          </p>
 
           <table class="compare">
             <tr>
-              <th>구분</th>
-              <th>파일/localStorage</th>
-              <th>데이터베이스</th>
+              <th>項目</th>
+              <th>ファイル / localStorage</th>
+              <th>データベース</th>
             </tr>
             <tr>
-              <td>여러 사용자</td>
-              <td style="color: var(--red)">❌ 내 브라우저에만 저장</td>
-              <td style="color: var(--green)">✅ 모든 사용자가 공유</td>
+              <td>複数ユーザー対応</td>
+              <td style="color: var(--red)">❌ 自分のブラウザにしか保存されない</td>
+              <td style="color: var(--green)">✅ すべてのユーザーで共有できる</td>
             </tr>
             <tr>
-              <td>동시 접근</td>
-              <td style="color: var(--red)">❌ 충돌 발생</td>
-              <td style="color: var(--green)">✅ DB가 안전하게 처리</td>
+              <td>同時アクセス</td>
+              <td style="color: var(--red)">❌ データの競合が発生する</td>
+              <td style="color: var(--green)">✅ DBが安全に処理する</td>
             </tr>
             <tr>
-              <td>검색·정렬</td>
-              <td style="color: var(--red)">❌ 전체 읽고 직접 구현</td>
-              <td style="color: var(--green)">✅ SQL 한 줄로 해결</td>
+              <td>検索・並び替え</td>
+              <td style="color: var(--red)">❌ 全件読み込んで自分で実装する必要がある</td>
+              <td style="color: var(--green)">✅ SQL一行で解決できる</td>
             </tr>
             <tr>
-              <td>데이터 무결성</td>
-              <td style="color: var(--red)">❌ 직접 검증해야 함</td>
-              <td style="color: var(--green)">✅ 제약 조건으로 자동 보장</td>
+              <td>データ整合性</td>
+              <td style="color: var(--red)">❌ 自分で検証しなければならない</td>
+              <td style="color: var(--green)">✅ 制約によって自動的に保証される</td>
             </tr>
             <tr>
-              <td>관계 표현</td>
-              <td style="color: var(--red)">❌ 복잡한 중첩 구조</td>
-              <td style="color: var(--green)">✅ 외래키로 깔끔하게</td>
+              <td>リレーション表現</td>
+              <td style="color: var(--red)">❌ 複雑なネスト構造になる</td>
+              <td style="color: var(--green)">✅ 外部キーでシンプルに管理できる</td>
             </tr>
           </table>
         </div>
 
-        <!-- 키(Key) 완전 정복 -->
-        <div class="section" id="s-key">
+        <!-- キー（Key）完全攻略 -->
+        <div class="section" id="s4">
           <div class="section-header">
             <div class="section-num">4</div>
             <div>
-              <h2>키(Key) 완전 정복</h2>
-              <div class="sub">테이블에서 데이터를 식별하고 연결하는 방법</div>
+              <h2>キー（Key）完全攻略</h2>
+              <div class="sub">テーブル内のデータを識別し、関連付ける方法</div>
             </div>
           </div>
 
           <p>
-            데이터베이스에서 <span class="hl">키(Key)</span>는 테이블 안에서 행(Row)을 식별하거나, 다른 테이블과
-            연결하는 역할을 합니다. 게시판의 4가지 키를 하나씩 살펴봅니다.
+            データベースにおける
+            <span class="hl">キー（Key）</span>とは、
+            テーブル内の行（Row）を識別したり、
+            他のテーブルと関連付けたりするための仕組みです。
+            掲示板システムで使用される4種類のキーについて見ていきましょう。
           </p>
 
-          <!-- 기본키 -->
-          <h3>🔑 기본키 (Primary Key)</h3>
+          <!-- 主キー -->
+          <h3>🔑 主キー（Primary Key）</h3>
+
           <p>
-            테이블에서 각 행을 <span class="hl">유일하게 식별</span>하는 컬럼입니다. 중복될 수 없고, NULL이 될 수
-            없습니다.
+            テーブル内の各行を
+            <span class="hl">一意に識別する</span>
+            カラムです。
+            重複はできず、NULLも許可されません。
           </p>
 
           <div class="card">
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
               <div style="flex: 1; min-width: 200px">
-                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">이런 역할을 합니다</div>
+                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">
+                  このような役割があります
+                </div>
+
                 <ul class="checklist">
-                  <li>행마다 반드시 달라야 함</li>
-                  <li>빈 값(NULL) 불가</li>
-                  <li>한 테이블에 반드시 하나만 존재</li>
-                  <li><code>AUTOINCREMENT</code>로 DB가 자동 부여</li>
+                  <li>各行で必ず異なる値を持つ</li>
+                  <li>NULL（空の値）は不可</li>
+                  <li>1つのテーブルに1つだけ存在できる</li>
+                  <li><code>AUTOINCREMENT</code>によりDBが自動採番する</li>
                 </ul>
               </div>
+
               <div style="flex: 1; min-width: 200px">
                 <div class="code-block" style="margin: 0">
                   <div class="code-header">
                     <div class="dot" style="background: #ff5f57"></div>
                     <div class="dot" style="background: #febc2e"></div>
                     <div class="dot" style="background: #28c840"></div>
-                    게시판 기본키
+                    掲示板の主キー
                   </div>
-                  <pre><span class="cmt">-- 모든 테이블의 id가 기본키</span>
+
+                  <pre><span class="cmt">-- すべてのテーブルの id が主キー</span>
 <span class="col">id</span> <span class="fn">INTEGER</span> <span class="kw">PRIMARY KEY AUTOINCREMENT</span>
 
 <span class="cmt">-- users: id=1, id=2, id=3...</span>
@@ -1336,37 +1407,46 @@
             </div>
           </div>
 
-          <!-- 외래키 -->
-          <h3>🔗 외래키 (Foreign Key)</h3>
+          <!-- 外部キー -->
+          <h3>🔗 外部キー (Foreign Key)</h3>
           <p>
-            다른 테이블의 기본키를 <span class="hl">참조</span>하는 컬럼입니다. 테이블 간의 관계를 만드는 연결
-            고리입니다.
+            他のテーブルの主キーを
+            <span class="hl">参照する</span>
+            カラムです。
+            テーブル同士の関係を作るための
+            つながり（リンク）となります。
           </p>
 
           <div class="card">
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+
               <div style="flex: 1; min-width: 200px">
-                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">이런 역할을 합니다</div>
+                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">
+                  このような役割があります
+                </div>
+
                 <ul class="checklist">
-                  <li>참조하는 테이블에 실제로 존재하는 값만 허용</li>
-                  <li>없는 user_id를 가진 게시글 생성 불가</li>
-                  <li>테이블 간 관계를 DB가 자동으로 보장</li>
+                  <li>参照先のテーブルに実際に存在する値しか登録できない</li>
+                  <li>存在しない user_id を持つ投稿は作成できない</li>
+                  <li>テーブル間の関係をDBが自動的に保証する</li>
                 </ul>
               </div>
+
               <div style="flex: 1; min-width: 200px">
                 <div class="code-block" style="margin: 0">
                   <div class="code-header">
                     <div class="dot" style="background: #ff5f57"></div>
                     <div class="dot" style="background: #febc2e"></div>
                     <div class="dot" style="background: #28c840"></div>
-                    게시판 외래키
+                    掲示板の外部キー
                   </div>
-                  <pre><span class="cmt">-- posts.user_id → users.id 참조</span>
+
+                  <pre><span class="cmt">-- posts.user_id → users.id を参照</span>
 <span class="col">user_id</span> <span class="fn">INTEGER</span>,
 <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>)
   <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)
 
-<span class="cmt">-- comments는 외래키 2개</span>
+<span class="cmt">-- comments には外部キーが2つある</span>
 <span class="kw">FOREIGN KEY</span> (<span class="col">post_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">posts</span>(<span class="col">id</span>)
 <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)</pre>
                 </div>
@@ -1375,203 +1455,231 @@
           </div>
 
           <!-- UNIQUE -->
-          <h3>🚫 유니크 키 (Unique Key)</h3>
+          <h3>🚫 ユニークキー（Unique Key）</h3>
+
           <p>
-            기본키처럼 <span class="hl">중복을 허용하지 않지만</span>, NULL은 허용되고 한 테이블에 여러 개 둘 수
-            있습니다.
+            主キーと同様に
+            <span class="hl">重複を許可しません</span>が、
+            NULLは許可され、
+            1つのテーブルに複数設定することができます。
           </p>
 
           <div class="card">
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+
               <div style="flex: 1; min-width: 200px">
-                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">기본키와의 차이</div>
+                <div style="font-size: 13px; color: var(--text-dim); margin-bottom: 8px">
+                  主キーとの違い
+                </div>
+
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px">
                   <tr style="background: var(--surface2)">
-                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: left">구분</th>
-                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">PK</th>
-                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">UQ</th>
+                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: left">
+                      項目
+                    </th>
+                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">
+                      PK
+                    </th>
+                    <th style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">
+                      UQ
+                    </th>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
-                    <td style="padding: 7px 10px; border: 1px solid var(--border)">중복 불가</td>
-                    <td
-                      style="
-                        padding: 7px 10px;
-                        border: 1px solid var(--border);
-                        text-align: center;
-                        color: var(--green);
-                      "
-                    >
+                    <td style="padding: 7px 10px; border: 1px solid var(--border)">
+                      重複不可
+                    </td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center; color: var(--green)">
                       ✅
                     </td>
-                    <td
-                      style="
-                        padding: 7px 10px;
-                        border: 1px solid var(--border);
-                        text-align: center;
-                        color: var(--green);
-                      "
-                    >
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center; color: var(--green)">
                       ✅
                     </td>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
-                    <td style="padding: 7px 10px; border: 1px solid var(--border)">NULL 불가</td>
-                    <td
-                      style="
-                        padding: 7px 10px;
-                        border: 1px solid var(--border);
-                        text-align: center;
-                        color: var(--green);
-                      "
-                    >
+                    <td style="padding: 7px 10px; border: 1px solid var(--border)">
+                      NULL不可
+                    </td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center; color: var(--green)">
                       ✅
                     </td>
-                    <td
-                      style="padding: 7px 10px; border: 1px solid var(--border); text-align: center; color: var(--red)"
-                    >
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center; color: var(--red)">
                       ❌
                     </td>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
-                    <td style="padding: 7px 10px; border: 1px solid var(--border)">테이블당 개수</td>
-                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">1개만</td>
-                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">여러 개 가능</td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border)">
+                      テーブルごとの数
+                    </td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">
+                      1つのみ
+                    </td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); text-align: center">
+                      複数設定可能
+                    </td>
                   </tr>
                 </table>
               </div>
+
               <div style="flex: 1; min-width: 200px">
                 <div class="code-block" style="margin: 0">
                   <div class="code-header">
                     <div class="dot" style="background: #ff5f57"></div>
                     <div class="dot" style="background: #febc2e"></div>
                     <div class="dot" style="background: #28c840"></div>
-                    게시판에서의 UNIQUE
+                    掲示板における UNIQUE 制約
                   </div>
-                  <pre><span class="cmt">-- 같은 아이디로 가입 불가</span>
+
+                  <pre><span class="cmt">-- 同じユーザー名では登録できない</span>
 <span class="col">username</span> <span class="fn">TEXT</span> <span class="kw">UNIQUE NOT NULL</span>
 
-<span class="cmt">-- alice가 이미 있으면</span>
+<span class="cmt">-- すでに alice が存在する場合</span>
 <span class="kw">INSERT INTO</span> <span class="tbl">users</span> (<span class="col">username</span>...)
 <span class="kw">VALUES</span> (<span class="str">'alice'</span>...)
-<span class="cmt">-- → UNIQUE constraint failed 오류</span></pre>
+<span class="cmt">-- → UNIQUE constraint failed エラー</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 복합키 -->
-          <h3>🔑🔑 복합 기본키 (Composite Key)</h3>
+          <!-- 複合キー -->
+          <h3>🔑🔑 複合主キー（Composite Key）</h3>
+
           <p>
-            <span class="hl">두 개 이상의 컬럼을 합쳐서</span> 기본키로 사용합니다. 각 컬럼은 중복될 수 있지만, 조합은
-            유일해야 합니다.
+            <span class="hl">2つ以上のカラムを組み合わせて</span>
+            主キーとして使用します。
+            各カラムは重複していても構いませんが、
+            その組み合わせは一意でなければなりません。
           </p>
 
           <div class="card">
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+
               <div style="flex: 1; min-width: 200px">
-                <p style="margin: 0 0 10px; font-size: 13px; color: var(--text-dim)">좋아요 테이블에서의 예시</p>
+                <p style="margin: 0 0 10px; font-size: 13px; color: var(--text-dim)">
+                  「いいね」テーブルでの例
+                </p>
+
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px; font-family: monospace">
                   <tr style="background: var(--surface2); color: var(--text-dim)">
                     <th style="padding: 7px 10px; border: 1px solid var(--border)">user_id</th>
                     <th style="padding: 7px 10px; border: 1px solid var(--border)">post_id</th>
-                    <th style="padding: 7px 10px; border: 1px solid var(--border)">가능?</th>
+                    <th style="padding: 7px 10px; border: 1px solid var(--border)">登録可能？</th>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--green)">
-                      ✅ 첫 좋아요
+                      ✅ 初回のいいね
                     </td>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">2</td>
-                    <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--green)">✅ 다른 글</td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--green)">
+                      ✅ 別の投稿
+                    </td>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">2</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--green)">
-                      ✅ 다른 사람
+                      ✅ 別のユーザー
                     </td>
                   </tr>
+
                   <tr style="color: var(--text-muted)">
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
                     <td style="padding: 7px 10px; border: 1px solid var(--border)">1</td>
-                    <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--red)">❌ 중복!</td>
+                    <td style="padding: 7px 10px; border: 1px solid var(--border); color: var(--red)">
+                      ❌ 重複！
+                    </td>
                   </tr>
                 </table>
               </div>
+
               <div style="flex: 1; min-width: 200px">
                 <div class="code-block" style="margin: 0">
                   <div class="code-header">
                     <div class="dot" style="background: #ff5f57"></div>
                     <div class="dot" style="background: #febc2e"></div>
                     <div class="dot" style="background: #28c840"></div>
-                    복합 기본키 선언
+                    複合主キーの定義
                   </div>
-                  <pre><span class="kw">CREATE TABLE</span> <span class="tbl">likes</span> (
-  <span class="col">user_id</span> <span class="fn">INTEGER</span>,
-  <span class="col">post_id</span> <span class="fn">INTEGER</span>,
-  <span class="cmt">-- 두 컬럼의 조합이 PK</span>
-  <span class="kw">PRIMARY KEY</span> (<span class="col">user_id</span>, <span class="col">post_id</span>)
-);</pre>
+
+          <pre><span class="kw">CREATE TABLE</span> <span class="tbl">likes</span> (
+            <span class="col">user_id</span> <span class="fn">INTEGER</span>,
+            <span class="col">post_id</span> <span class="fn">INTEGER</span>,
+
+            <span class="cmt">-- 2つのカラムの組み合わせを主キーにする</span>
+            <span class="kw">PRIMARY KEY</span> (<span class="col">user_id</span>, <span class="col">post_id</span>)
+          );</pre>
                 </div>
               </div>
+
             </div>
           </div>
 
-          <!-- 요약 -->
-          <h3>한눈에 보는 키 정리</h3>
+          <!-- まとめ -->
+          <h3>キーの種類まとめ</h3>
+
           <table class="compare">
             <tr>
-              <th>종류</th>
-              <th>역할</th>
-              <th>게시판 예시</th>
+              <th>種類</th>
+              <th>役割</th>
+              <th>掲示板での例</th>
             </tr>
+
             <tr>
-              <td><span class="badge badge-pk">PK</span> 기본키</td>
-              <td>행의 고유 식별자</td>
+              <td><span class="badge badge-pk">PK</span> 主キー</td>
+              <td>行を一意に識別する</td>
               <td><code>users.id</code>, <code>posts.id</code>, <code>comments.id</code></td>
             </tr>
+
             <tr>
-              <td><span class="badge badge-fk">FK</span> 외래키</td>
-              <td>다른 테이블 참조</td>
+              <td><span class="badge badge-fk">FK</span> 外部キー</td>
+              <td>他のテーブルを参照する</td>
               <td><code>posts.user_id</code>, <code>comments.post_id</code></td>
             </tr>
+
             <tr>
-              <td><span class="badge badge-uq">UQ</span> 유니크키</td>
-              <td>중복 방지</td>
+              <td><span class="badge badge-uq">UQ</span> ユニークキー</td>
+              <td>重複を防ぐ</td>
               <td><code>users.username</code></td>
             </tr>
+
             <tr>
               <td>
                 <span
                   class="badge badge-pk"
                   style="background: rgba(96, 165, 250, 0.2); color: var(--blue); border-color: rgba(96, 165, 250, 0.3)"
-                  >CPK</span
-                >
-                복합키
+                >CPK</span>
+                複合主キー
               </td>
-              <td>컬럼 조합으로 식별</td>
+              <td>複数のカラムの組み合わせで識別する</td>
               <td><code>likes(user_id, post_id)</code></td>
             </tr>
           </table>
+
         </div>
 
-        <!-- 데이터 타입 -->
-        <div class="section" id="s-type">
+        <div class="section" id="s5">
           <div class="section-header">
             <div class="section-num">5</div>
             <div>
-              <h2>데이터 타입</h2>
-              <div class="sub">컬럼에 어떤 종류의 값을 담을지 결정한다</div>
+              <h2>データ型</h2>
+              <div class="sub">どの値を、どの型で保存するか</div>
             </div>
           </div>
 
           <p>
-            테이블을 설계할 때 각 컬럼에 <span class="hl">어떤 타입의 데이터를 넣을지</span> 지정해야 합니다. 타입이
-            맞지 않으면 저장도, 연산도 제대로 되지 않습니다.
+            テーブルを設計するときは、各カラムに <span class="hl">どの種類のデータを入れるか</span> を決める必要があります。
+            型が合っていないと、保存も計算も正しく行えません。
           </p>
 
           <div style="display: flex; flex-direction: column; gap: 12px; margin: 20px 0">
@@ -1581,78 +1689,115 @@
                 <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--orange)">
                   INTEGER
                 </div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">정수</div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">
+                  整数
+                </div>
               </div>
+
               <div style="flex: 1">
-                <p style="margin: 0 0 8px; font-size: 13.5px">소수점 없는 숫자. id, 개수, 순서 등에 씁니다.</p>
+                <p style="margin: 0 0 8px; font-size: 13.5px">
+                  小数点のない数値です。`id`、件数、順番などに使います。
+                </p>
+
                 <div style="display: flex; gap: 8px; flex-wrap: wrap">
                   <code>id = 1</code>
                   <code>user_id = 3</code>
                   <code>like_count = 42</code>
                 </div>
               </div>
+
               <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
-                게시판: <span style="color: var(--yellow)">id, user_id, post_id</span>
+                掲示板:
+                <span style="color: var(--yellow)">id, user_id, post_id</span>
               </div>
             </div>
 
-            <!-- TEXT -->
-            <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
-              <div style="min-width: 110px">
-                <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--green)">TEXT</div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">문자열</div>
+          <!-- TEXT -->
+          <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
+            <div style="min-width: 110px">
+              <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--green)">
+                TEXT
               </div>
-              <div style="flex: 1">
-                <p style="margin: 0 0 8px; font-size: 13.5px">
-                  길이 제한 없는 문자열. 이름, 제목, 내용 등 거의 모든 문자 데이터에 씁니다.
-                </p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                  <code>username = "alice"</code>
-                  <code>title = "첫 번째 글"</code>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
-                게시판: <span style="color: var(--yellow)">username, title, content, password</span>
+              <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">
+                文字列
               </div>
             </div>
 
-            <!-- REAL -->
-            <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
-              <div style="min-width: 110px">
-                <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--blue)">REAL</div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">실수 (소수)</div>
+            <div style="flex: 1">
+              <p style="margin: 0 0 8px; font-size: 13.5px">
+                長さに制限のない文字列です。
+                ユーザー名、タイトル、本文など、
+                ほとんどの文字データに使用します。
+              </p>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <code>username = "alice"</code>
+                <code>title = "最初の投稿"</code>
               </div>
-              <div style="flex: 1">
-                <p style="margin: 0 0 8px; font-size: 13.5px">소수점이 있는 숫자. 가격, 평점, 위도/경도 등에 씁니다.</p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                  <code>price = 9900.50</code>
-                  <code>rating = 4.5</code>
-                  <code>lat = 37.5665</code>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">게시판: 해당 없음</div>
             </div>
 
-            <!-- DATETIME -->
-            <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
-              <div style="min-width: 110px">
-                <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--cyan)">
-                  DATETIME
-                </div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">날짜+시간</div>
+            <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
+              掲示板:
+              <span style="color: var(--yellow)">username, title, content, password</span>
+            </div>
+          </div>
+
+          <!-- REAL -->
+          <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
+            <div style="min-width: 110px">
+              <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--blue)">
+                REAL
               </div>
-              <div style="flex: 1">
-                <p style="margin: 0 0 8px; font-size: 13.5px">
-                  날짜와 시간을 함께 저장. 생성일, 수정일, 만료일 등에 씁니다.
-                </p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                  <code>created_at = "2026-05-20 09:30:00"</code>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
-                게시판: <span style="color: var(--yellow)">created_at</span>
+              <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">
+                実数（小数）
               </div>
             </div>
+
+            <div style="flex: 1">
+              <p style="margin: 0 0 8px; font-size: 13.5px">
+                小数点を含む数値です。
+                価格、評価、緯度・経度などに使用します。
+              </p>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <code>price = 9900.50</code>
+                <code>rating = 4.5</code>
+                <code>lat = 37.5665</code>
+              </div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
+              掲示板: 該当なし
+            </div>
+          </div>
+
+          <!-- DATETIME -->
+          <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
+            <div style="min-width: 110px">
+              <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--cyan)">
+                DATETIME
+              </div>
+              <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">
+                日付＋時刻
+              </div>
+            </div>
+
+            <div style="flex: 1">
+              <p style="margin: 0 0 8px; font-size: 13.5px">
+                日付と時刻をまとめて保存します。
+                作成日時、更新日時、有効期限などに使用します。
+              </p>
+
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <code>created_at = "2026-05-20 09:30:00"</code>
+              </div>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
+              掲示板:
+              <span style="color: var(--yellow)">created_at</span>
+            </div>
+          </div>
 
             <!-- BOOLEAN -->
             <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
@@ -1660,11 +1805,11 @@
                 <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--primary-light)">
                   BOOLEAN
                 </div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">참/거짓</div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">真偽値</div>
               </div>
               <div style="flex: 1">
                 <p style="margin: 0 0 8px; font-size: 13.5px">
-                  참(1) 또는 거짓(0). 활성화 여부, 공개/비공개, 읽음 여부 등에 씁니다.
+                  真(1) または偽(0)を表します。有効・無効、公開・非公開、既読・未読などに使います。
                 </p>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap">
                   <code>is_active = 1</code>
@@ -1673,7 +1818,7 @@
                 </div>
               </div>
               <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">
-                SQLite는 내부적으로<br />INTEGER 0/1로 처리
+                SQLiteでは内部的に<br />INTEGER の 0/1 として扱う
               </div>
             </div>
 
@@ -1681,88 +1826,88 @@
             <div class="card" style="display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px">
               <div style="min-width: 110px">
                 <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: var(--red)">BLOB</div>
-                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">바이너리</div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-top: 3px">バイナリ</div>
               </div>
               <div style="flex: 1">
                 <p style="margin: 0 0 8px; font-size: 13.5px">
-                  이미지, 파일 등 바이너리 데이터. 실무에서는 파일 자체보다
-                  <span style="color: var(--yellow)">저장 경로(URL)</span>를 TEXT로 넣는 경우가 많습니다.
+                  画像やファイルなどのバイナリデータです。実務ではファイル本体よりも
+                  <span style="color: var(--yellow)">保存先パス（URL）</span>を TEXT で持たせることが多いです。
                 </p>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap">
                   <code>thumbnail_url = "/images/abc.jpg"</code>
                 </div>
               </div>
-              <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">대부분 URL을<br />TEXT로 저장</div>
+              <div style="font-size: 12px; color: var(--text-dim); flex-shrink: 0">多くの場合は URL を<br />TEXT で保存</div>
             </div>
           </div>
 
-          <h3>타입 선택 기준</h3>
+          <h3>型を選ぶ基準</h3>
           <table class="compare">
             <tr>
-              <th>상황</th>
-              <th>타입</th>
-              <th>이유</th>
+              <th>場面</th>
+              <th>型</th>
+              <th>理由</th>
             </tr>
             <tr>
-              <td>사용자 ID, 게시글 번호</td>
+              <td>ユーザー ID、投稿番号</td>
               <td><code>INTEGER</code></td>
-              <td>숫자 연산·비교, JOIN에 유리</td>
+              <td>数値演算・比較がしやすく、JOIN に向く</td>
             </tr>
             <tr>
-              <td>이름, 제목, 내용</td>
+              <td>名前、タイトル、本文</td>
               <td><code>TEXT</code></td>
-              <td>길이 예측 불가, 자유로운 문자열</td>
+              <td>長さを固定しづらく、自由な文字列を扱える</td>
             </tr>
             <tr>
-              <td>가격, 평점</td>
+              <td>価格、評価</td>
               <td><code>REAL</code></td>
-              <td>소수점 필요</td>
+              <td>小数点が必要</td>
             </tr>
             <tr>
-              <td>작성일, 수정일</td>
+              <td>作成日、更新日</td>
               <td><code>DATETIME</code></td>
-              <td>날짜 비교·정렬 가능</td>
+              <td>日時の比較・並び替えができる</td>
             </tr>
             <tr>
-              <td>공개여부, 활성화</td>
+              <td>公開状態、有効化状態</td>
               <td><code>INTEGER (0/1)</code></td>
-              <td>BOOLEAN이 없는 DB도 많음</td>
+              <td>BOOLEAN 型を持たない DB も多い</td>
             </tr>
             <tr>
-              <td>이미지, 첨부파일</td>
+              <td>画像、添付ファイル</td>
               <td><code>TEXT (URL)</code></td>
-              <td>파일은 S3 등 별도 저장, DB엔 경로만</td>
+              <td>ファイル本体は S3 などへ保存し、DB にはパスだけを持たせる</td>
             </tr>
           </table>
 
           <div class="callout callout-warn">
             <div class="callout-icon">⚠️</div>
             <p>
-              <strong>전화번호는 INTEGER가 아닌 TEXT로 저장합니다.</strong> 010-1234-5678처럼 하이픈이 들어가고, 앞자리
-              0이 사라지는 문제가 생기기 때문입니다.
+              <strong>電話番号は INTEGER ではなく TEXT で保存します。</strong> `010-1234-5678` のようにハイフンを含むことがあり、
+              先頭の 0 が落ちる問題もあるためです。
             </p>
           </div>
         </div>
 
         <!-- ⑥ ERD -->
-        <div class="section" id="s4">
+        <div class="section" id="s6">
           <div class="section-header">
             <div class="section-num">6</div>
             <div>
-              <h2>ERD — 설계도 읽기</h2>
+              <h2>ERD — 設計図の読み方</h2>
               <div class="sub">Entity Relationship Diagram</div>
             </div>
           </div>
 
           <p>
-            ERD는 데이터베이스의 <span class="hl">설계 청사진</span>입니다. 코드를 작성하기 전에 테이블 구조와 관계를
-            시각적으로 정리합니다.
+            ERD はデータベースの <span class="hl">設計図</span>です。コードを書く前に、テーブル構造と関係性を
+            視覚的に整理します。
           </p>
 
           <div class="erd-wrap">
             <div class="erd-header">
               <div class="erd-dot"></div>
-              게시판 ERD — ERDCloud
+              掲示板 ERD — ERDCloud
             </div>
             <iframe
               width="100%"
@@ -1777,28 +1922,28 @@
             class="card"
             style="display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted)"
           >
-            <span><span class="badge badge-pk">PK</span> Primary Key — 기본키 (행의 고유 식별자)</span>
-            <span><span class="badge badge-fk">FK</span> Foreign Key — 외래키 (다른 테이블 참조)</span>
-            <span><span class="badge badge-uq">UQ</span> Unique — 중복 불가</span>
-            <span><span class="badge badge-nn">NN</span> Not Null — 비워둘 수 없음</span>
+            <span><span class="badge badge-pk">PK</span> Primary Key — 主キー（行を一意に識別）</span>
+            <span><span class="badge badge-fk">FK</span> Foreign Key — 外部キー（他テーブルを参照）</span>
+            <span><span class="badge badge-uq">UQ</span> Unique — 重複不可</span>
+            <span><span class="badge badge-nn">NN</span> Not Null — NULL不可</span>
           </div>
 
           <div class="callout callout-info">
             <div class="callout-icon">📐</div>
             <p>
-              <strong>ERD를 먼저 그리는 이유:</strong> 코드를 짜다가 설계가 잘못됐음을 발견하면 전체를 뒤엎어야 합니다.
-              설계 단계에서 ERD로 검토하면 수정 비용이 거의 없습니다.
+              <strong>先に ERD を描く理由:</strong> 実装中に設計ミスへ気づくと、全体を大きく作り直すことになります。
+              設計段階で ERD を確認しておけば、修正コストはかなり抑えられます。
             </p>
           </div>
         </div>
 
-        <!-- ⑤ 테이블 구조 -->
-        <div class="section" id="s5">
+        <!-- ⑦ テーブル構造 -->
+        <div class="section" id="s7">
           <div class="section-header">
             <div class="section-num">7</div>
             <div>
-              <h2>테이블 구조 분석</h2>
-              <div class="sub">3개의 테이블이 게시판 전체를 표현한다</div>
+              <h2>テーブル構造の分析</h2>
+              <div class="sub">3つのテーブルで掲示板全体を表現する</div>
             </div>
           </div>
 
@@ -1872,7 +2017,7 @@
               <div class="dot" style="background: #ff5f57"></div>
               <div class="dot" style="background: #febc2e"></div>
               <div class="dot" style="background: #28c840"></div>
-              server/db.js — 실제 테이블 생성 SQL
+              server/db.js — 実際のテーブル作成 SQL
             </div>
             <pre><span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="tbl">users</span> (
   <span class="col">id</span>         <span class="fn">INTEGER</span> <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,
@@ -1887,7 +2032,7 @@
   <span class="col">content</span>    <span class="fn">TEXT</span>    <span class="kw">NOT NULL</span>,
   <span class="col">user_id</span>    <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
   <span class="col">created_at</span> <span class="fn">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
-  <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)   <span class="cmt">← 외래키</span>
+  <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)   <span class="cmt">← 外部キー</span>
 );
 
 <span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="tbl">comments</span> (
@@ -1896,58 +2041,58 @@
   <span class="col">post_id</span>    <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
   <span class="col">user_id</span>    <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
   <span class="col">created_at</span> <span class="fn">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
-  <span class="kw">FOREIGN KEY</span> (<span class="col">post_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">posts</span>(<span class="col">id</span>),   <span class="cmt">← 외래키</span>
-  <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)    <span class="cmt">← 외래키</span>
+  <span class="kw">FOREIGN KEY</span> (<span class="col">post_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">posts</span>(<span class="col">id</span>),   <span class="cmt">← 外部キー</span>
+  <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>)    <span class="cmt">← 外部キー</span>
 );</pre>
           </div>
         </div>
 
-        <!-- ⑥ 1:N 관계 -->
-        <div class="section" id="s6">
+        <!-- ⑧ 1:N 関係 -->
+        <div class="section" id="s8">
           <div class="section-header">
             <div class="section-num">8</div>
             <div>
-              <h2>관계 — 1:N 이해하기</h2>
-              <div class="sub">테이블들이 어떻게 연결되는가</div>
+              <h2>リレーション — 1:N を理解する</h2>
+              <div class="sub">テーブル同士がどうつながるか</div>
             </div>
           </div>
 
           <p>
-            게시판의 모든 관계는 <span class="hl">1:N (일대다)</span>입니다. "1" 쪽 하나에 "N" 쪽 여러 개가 연결됩니다.
+            掲示板のリレーションはすべて <span class="hl">1:N（一対多）</span> です。"1" 側の1つに対して、"N" 側の複数が結びつきます。
           </p>
 
           <div class="rel-diagram">
             <div class="rel-box users">
-              👤 users<br /><span style="font-size: 11px; color: var(--text-dim)">1명</span>
+              👤 users<br /><span style="font-size: 11px; color: var(--text-dim)">1人</span>
             </div>
             <div class="rel-connector">
               <div class="rel-label">1 : N</div>
               <div class="rel-line"></div>
-              <div class="rel-sub">여러 게시글 작성</div>
+              <div class="rel-sub">複数の投稿を書く</div>
             </div>
             <div class="rel-box posts">
-              📝 posts<br /><span style="font-size: 11px; color: var(--text-dim)">N개</span>
+              📝 posts<br /><span style="font-size: 11px; color: var(--text-dim)">N件</span>
             </div>
             <div class="rel-connector">
               <div class="rel-label">1 : N</div>
               <div class="rel-line"></div>
-              <div class="rel-sub">여러 댓글 달림</div>
+              <div class="rel-sub">複数のコメントが付く</div>
             </div>
             <div class="rel-box comments">
-              💬 comments<br /><span style="font-size: 11px; color: var(--text-dim)">N개</span>
+              💬 comments<br /><span style="font-size: 11px; color: var(--text-dim)">N件</span>
             </div>
           </div>
 
           <div class="callout callout-tip">
             <div class="callout-icon">🎯</div>
             <p>
-              <strong>설계 법칙:</strong> 1:N에서 외래키는 항상 <strong>"N" 쪽 테이블</strong>에 둡니다.<br />
-              사용자 1명 → 게시글 N개이므로, <code>user_id</code>는 posts 테이블에 있습니다.
+              <strong>設計のルール:</strong> 1:N では外部キーを必ず <strong>"N" 側のテーブル</strong>に置きます。<br />
+              ユーザー1人に対して投稿が N 件あるので、<code>user_id</code> は posts テーブルに入ります。
             </p>
           </div>
 
           <div class="card">
-            <p style="margin-bottom: 12px; font-size: 13px; color: var(--text-dim)">데이터로 이해하기</p>
+            <p style="margin-bottom: 12px; font-size: 13px; color: var(--text-dim)">データで理解する</p>
             <table style="width: 100%; border-collapse: collapse; font-size: 13px; font-family: monospace">
               <tr style="background: var(--surface2); color: var(--text-dim)">
                 <th style="padding: 8px 12px; border: 1px solid var(--border); text-align: left">users.id</th>
@@ -1966,7 +2111,7 @@
                   →
                 </td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border)">1</td>
-                <td style="padding: 7px 12px; border: 1px solid var(--border)">첫 번째 글</td>
+                <td style="padding: 7px 12px; border: 1px solid var(--border)">1つ目の投稿</td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border); color: var(--orange)">1</td>
               </tr>
               <tr style="color: var(--text-muted)">
@@ -1978,7 +2123,7 @@
                   →
                 </td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border)">2</td>
-                <td style="padding: 7px 12px; border: 1px solid var(--border)">두 번째 글</td>
+                <td style="padding: 7px 12px; border: 1px solid var(--border)">2つ目の投稿</td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border); color: var(--cyan)">2</td>
               </tr>
               <tr style="color: var(--text-muted)">
@@ -1990,92 +2135,92 @@
                   →
                 </td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border)">3</td>
-                <td style="padding: 7px 12px; border: 1px solid var(--border)">세 번째 글</td>
+                <td style="padding: 7px 12px; border: 1px solid var(--border)">3つ目の投稿</td>
                 <td style="padding: 7px 12px; border: 1px solid var(--border); color: var(--orange)">1</td>
               </tr>
             </table>
             <p style="margin: 10px 0 0; font-size: 12px; color: var(--text-dim)">
-              alice(id=1)가 게시글 1번·3번을, bob(id=2)이 2번을 작성했습니다. user_id가 연결 고리입니다.
+              alice(id=1) は投稿 1 番・3 番を、bob(id=2) は 2 番を作成しています。`user_id` が接続の鍵です。
             </p>
           </div>
         </div>
 
-        <!-- ⑦ 외래키와 무결성 -->
-        <div class="section" id="s7">
+        <!-- ⑨ 外部キーと整合性 -->
+        <div class="section" id="s9">
           <div class="section-header">
             <div class="section-num">9</div>
             <div>
-              <h2>외래키와 데이터 무결성</h2>
-              <div class="sub">DB가 스스로 데이터를 지키는 방법</div>
+              <h2>外部キーとデータ整合性</h2>
+              <div class="sub">DB が自動でデータを守る仕組み</div>
             </div>
           </div>
 
-          <p>외래키는 단순한 숫자가 아닙니다. <span class="hl">DB가 자동으로 참조 무결성을 보장</span>합니다.</p>
+          <p>外部キーは単なる数字ではありません。<span class="hl">DB が参照整合性を自動で保証</span>します。</p>
 
           <div class="card">
-            <h3 style="margin-top: 0; color: var(--red)">❌ 외래키가 막아주는 상황들</h3>
+            <h3 style="margin-top: 0; color: var(--red)">❌ 外部キーが防いでくれるケース</h3>
             <ul class="checklist">
-              <li>존재하지 않는 user_id를 가진 게시글 생성 시도</li>
-              <li>댓글이 달린 게시글을 댓글 삭제 없이 지우려는 시도</li>
-              <li>탈퇴한 사용자 id를 새 게시글에 연결하려는 시도</li>
+              <li>存在しない `user_id` を持つ投稿を作ろうとする</li>
+              <li>コメント付きの投稿を、コメント未削除のまま消そうとする</li>
+              <li>退会済みユーザーの id を新規投稿に紐づけようとする</li>
             </ul>
           </div>
 
           <div class="callout callout-warn">
             <div class="callout-icon">⚠️</div>
             <p>
-              <strong>삭제 순서가 중요합니다.</strong> 게시글을 삭제할 때 딸린 댓글을 먼저 지워야 합니다.<br />
-              부모(posts) 먼저 지우면 자식(comments)의 외래키가 허공을 가리켜서 오류 발생합니다.
+              <strong>削除順序が重要です。</strong> 投稿を削除するときは、先に関連コメントを削除する必要があります。<br />
+              親の `posts` を先に消すと、子の `comments` の外部キー参照先がなくなりエラーになります。
             </p>
             <div class="code-block" style="margin: 10px 0 0">
-              <pre><span class="cmt">// routes/posts.js — 순서가 중요!</span>
-db.prepare(<span class="str">"DELETE FROM comments WHERE post_id = ?"</span>).run(id);  <span class="cmt">← 자식 먼저</span>
-db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);           <span class="cmt">← 부모 나중</span></pre>
+              <pre><span class="cmt">// routes/posts.js — 順序が重要</span>
+db.prepare(<span class="str">"DELETE FROM comments WHERE post_id = ?"</span>).run(id);  <span class="cmt">← 子を先に削除</span>
+db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);           <span class="cmt">← 親をあとで削除</span></pre>
             </div>
           </div>
         </div>
 
-        <!-- ⑧ 실습 -->
-        <div class="section" id="s8">
+        <!-- ⑩ 実習 -->
+        <div class="section" id="s10">
           <div class="section-header">
             <div class="section-num">10</div>
             <div>
-              <h2>실습 — 좋아요 기능 설계하기</h2>
-              <div class="sub">N:M 관계와 중간 테이블</div>
+              <h2>実習 — いいね機能を設計する</h2>
+              <div class="sub">N:M 関係と中間テーブル</div>
             </div>
           </div>
 
           <div class="practice">
-            <div class="practice-label">🖊 실습 과제</div>
-            <h3>게시글에 좋아요 기능을 추가한다면?</h3>
+            <div class="practice-label">🖊 実習課題</div>
+            <h3>投稿にいいね機能を追加するとしたら？</h3>
             <p>
-              한 사용자가 여러 게시글에 좋아요를 누를 수 있고,<br />
-              한 게시글에 여러 사용자가 좋아요를 누를 수 있습니다.
+              1人のユーザーが複数の投稿にいいねでき、<br />
+              1つの投稿に複数のユーザーがいいねできます。
             </p>
-            <p style="margin-top: 8px">ERDCloud에서 likes 테이블을 직접 설계해보세요.</p>
+            <p style="margin-top: 8px">ERDCloud で `likes` テーブルを自分で設計してみましょう。</p>
           </div>
 
-          <h3>힌트 — 왜 중간 테이블이 필요한가</h3>
+          <h3>ヒント — なぜ中間テーブルが必要なのか</h3>
           <p>
-            users와 posts는 <span class="hl">N:M (다대다)</span> 관계입니다. 1:N과 달리 한쪽에 외래키를 두는 것만으로는
-            표현할 수 없습니다.
+            `users` と `posts` は <span class="hl">N:M（多対多）</span> の関係です。1:N と違って、片側に外部キーを置くだけでは
+            表現できません。
           </p>
 
           <div class="rel-diagram" style="gap: 8px">
             <div class="rel-box users" style="font-size: 13px; padding: 10px 16px">
-              👤 users<br /><span style="font-size: 11px; color: var(--text-dim)">N명</span>
+              👤 users<br /><span style="font-size: 11px; color: var(--text-dim)">N人</span>
             </div>
             <div class="rel-connector">
               <div class="rel-label">N : M</div>
               <div class="rel-line"></div>
             </div>
             <div class="rel-box posts" style="font-size: 13px; padding: 10px 16px">
-              📝 posts<br /><span style="font-size: 11px; color: var(--text-dim)">M개</span>
+              📝 posts<br /><span style="font-size: 11px; color: var(--text-dim)">M件</span>
             </div>
           </div>
 
           <div style="text-align: center; margin: 8px 0; color: var(--text-dim); font-size: 13px">
-            ↓ N:M은 중간 테이블로 분리
+            ↓ N:M は中間テーブルに分解する
           </div>
 
           <div class="rel-diagram">
@@ -2093,7 +2238,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                 padding: 10px 16px;
               "
             >
-              ❤️ likes<br /><span style="font-size: 11px; color: var(--text-dim)">(중간 테이블)</span>
+              ❤️ likes<br /><span style="font-size: 11px; color: var(--text-dim)">(中間テーブル)</span>
             </div>
             <div class="rel-connector">
               <div class="rel-label">N : 1</div>
@@ -2102,19 +2247,19 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
             <div class="rel-box posts" style="font-size: 13px; padding: 10px 16px">📝 posts</div>
           </div>
 
-          <h3>정답 — likes 테이블 설계</h3>
+          <h3>解答 — `likes` テーブル設計</h3>
           <div class="code-block">
             <div class="code-header">
               <div class="dot" style="background: #ff5f57"></div>
               <div class="dot" style="background: #febc2e"></div>
               <div class="dot" style="background: #28c840"></div>
-              likes 테이블
+              likes テーブル
             </div>
             <pre><span class="kw">CREATE TABLE</span> <span class="tbl">likes</span> (
   <span class="col">user_id</span>    <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
   <span class="col">post_id</span>    <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
   <span class="col">created_at</span> <span class="fn">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
-  <span class="kw">PRIMARY KEY</span> (<span class="col">user_id</span>, <span class="col">post_id</span>),            <span class="cmt">← 복합키: 같은 사람이 같은 글에 중복 좋아요 불가</span>
+  <span class="kw">PRIMARY KEY</span> (<span class="col">user_id</span>, <span class="col">post_id</span>),            <span class="cmt">← 複合キー: 同じ人が同じ投稿へ重複いいね不可</span>
   <span class="kw">FOREIGN KEY</span> (<span class="col">user_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">users</span>(<span class="col">id</span>),
   <span class="kw">FOREIGN KEY</span> (<span class="col">post_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">posts</span>(<span class="col">id</span>)
 );</pre>
@@ -2123,48 +2268,48 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
           <div class="callout callout-info">
             <div class="callout-icon">💡</div>
             <p>
-              <strong>복합 기본키:</strong> <code>PRIMARY KEY (user_id, post_id)</code>는 두 컬럼의 조합이 유일해야
-              한다는 뜻입니다. 같은 사람이 같은 글에 좋아요를 두 번 누르면 DB가 자동으로 막습니다.
+              <strong>複合主キー:</strong> <code>PRIMARY KEY (user_id, post_id)</code> は、2つのカラムの組み合わせが一意でなければならない
+              という意味です。同じ人が同じ投稿に2回いいねしようとすると、DB が自動で防ぎます。
             </p>
           </div>
         </div>
 
-        <!-- ⑨ 설계 원칙 -->
-        <div class="section" id="s9">
+        <!-- 11 設計原則 -->
+        <div class="section" id="s11">
           <div class="section-header">
             <div class="section-num">11</div>
             <div>
-              <h2>설계 원칙 정리</h2>
-              <div class="sub">좋은 설계를 판단하는 기준</div>
+              <h2>設計原則のまとめ</h2>
+              <div class="sub">良い設計を判断する基準</div>
             </div>
           </div>
 
           <p>
-            AI가 SQL 쿼리는 대신 짜줄 수 있지만, <span class="hl">설계는 사람이 판단해야 합니다.</span> 정답이 없고,
-            상황에 맞는 트레이드오프를 선택하는 것이 핵심입니다.
+            AI は SQL クエリを代わりに書けますが、<span class="hl">設計を判断するのは人です。</span> 絶対的な正解はなく、
+            状況に応じたトレードオフを選ぶことが重要です。
           </p>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0">
             <div class="card">
-              <h3 style="margin-top: 0; font-size: 14px; color: var(--orange)">하나의 컬럼 = 하나의 값</h3>
+              <h3 style="margin-top: 0; font-size: 14px; color: var(--orange)">1つのカラム = 1つの値</h3>
               <p style="margin: 0; font-size: 13px">
-                배열이나 JSON을 한 칸에 넣지 않습니다. 나중에 검색·수정이 어려워집니다. (단, 의도적 예외는 허용)
+                配列や JSON を1セルに詰め込みません。後から検索や更新がしづらくなるためです。（意図的な例外は可）
               </p>
             </div>
             <div class="card">
-              <h3 style="margin-top: 0; font-size: 14px; color: var(--cyan)">중복 데이터는 분리</h3>
+              <h3 style="margin-top: 0; font-size: 14px; color: var(--cyan)">重複データは分離する</h3>
               <p style="margin: 0; font-size: 13px">
-                같은 정보가 여러 곳에 반복되면 테이블을 분리합니다. 수정 시 한 곳만 바꾸면 됩니다.
+                同じ情報が複数箇所に繰り返し現れるなら、テーブルを分けます。修正時に1か所だけ直せば済みます。
               </p>
             </div>
             <div class="card">
-              <h3 style="margin-top: 0; font-size: 14px; color: var(--green)">N:M은 중간 테이블로</h3>
-              <p style="margin: 0; font-size: 13px">다대다 관계는 직접 표현하지 않고, 1:N 두 개로 분리합니다.</p>
+              <h3 style="margin-top: 0; font-size: 14px; color: var(--green)">N:M は中間テーブルへ</h3>
+              <p style="margin: 0; font-size: 13px">多対多の関係は直接持たず、1:N を2本に分けて表現します。</p>
             </div>
             <div class="card">
-              <h3 style="margin-top: 0; font-size: 14px; color: var(--primary-light)">완벽한 설계는 없다</h3>
+              <h3 style="margin-top: 0; font-size: 14px; color: var(--primary-light)">完璧な設計はない</h3>
               <p style="margin: 0; font-size: 13px">
-                정규화 vs 성능, 단순함 vs 확장성. 상황에 맞게 트레이드오프를 선택합니다.
+                正規化 vs 性能、単純さ vs 拡張性。状況に合わせてトレードオフを選びます。
               </p>
             </div>
           </div>
@@ -2172,41 +2317,41 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
           <div class="callout callout-tip">
             <div class="callout-icon">🎓</div>
             <p>
-              <strong>AI 시대의 DB 역량:</strong> SQL 문법 암기보다
-              <strong>어떤 테이블을 만들지, 관계를 어떻게 설정할지</strong>가 훨씬 중요합니다. 설계를 잘 설명할 수
-              있으면 AI가 나머지 쿼리를 짜줍니다.
+              <strong>AI 時代の DB 力:</strong> SQL 文法の暗記よりも、
+              <strong>どんなテーブルを作り、関係をどう張るか</strong> のほうが重要です。設計を明確に説明できれば、
+              AI が残りのクエリ作成を助けてくれます。
             </p>
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════ 정규화 기초 -->
-        <div class="section" id="s-norm">
+        <!-- ══════════════════════════════════════════ 正規化の基礎 -->
+        <div class="section" id="s12">
           <div class="section-header">
             <div class="section-num">12</div>
             <div>
-              <h2>정규화 기초</h2>
-              <div class="sub">중복을 제거하고 구조를 정돈하는 방법</div>
+              <h2>正規化の基礎</h2>
+              <div class="sub">重複を減らし、構造を整える方法</div>
             </div>
           </div>
 
           <p>
-            <span class="hl">정규화(Normalization)</span>는 테이블의 중복과 이상(anomaly)을 줄이기 위해 구조를
-            단계적으로 정돈하는 과정입니다. 1NF → 2NF → 3NF 순서로 조건이 점점 엄격해집니다.
+            <span class="hl">正規化（Normalization）</span>とは、テーブルの重複や異常（anomaly）を減らすために構造を
+            段階的に整えていく考え方です。1NF → 2NF → 3NF の順に、条件は少しずつ厳しくなります。
           </p>
 
           <!-- 1NF -->
           <h3 style="margin-top: 28px; margin-bottom: 8px; color: var(--primary-light)">
-            ① 1NF — 원자값 (Atomic Values)
+            ① 1NF — 原子値（Atomic Values）
           </h3>
           <p style="margin-bottom: 12px">
-            하나의 칸(셀)에는 하나의 값만 들어가야 합니다. 목록·배열을 한 칸에 넣으면 1NF 위반입니다.
+            1つのセルには 1つの値だけが入るべきです。リストや配列を1セルに入れると 1NF 違反になります。
           </p>
 
           <div class="norm-grid">
             <div class="norm-case bad">
-              <div class="norm-case-head">❌ 1NF 위반</div>
+              <div class="norm-case-head">❌ 1NF 違反</div>
               <div class="norm-case-body">
-                <div class="norm-caption">`posts` 테이블 한 칸에 태그 목록을 몰아서 넣은 상태</div>
+                <div class="norm-caption">`posts` テーブルにタグ一覧を1セルへ詰め込んでいる</div>
                 <table class="mini-table">
                   <tr>
                     <th>id</th>
@@ -2215,22 +2360,22 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                   </tr>
                   <tr>
                     <td>1</td>
-                    <td>안녕</td>
-                    <td><span class="em-bad">공지, 이벤트, 중요</span></td>
+                    <td>お知らせ</td>
+                    <td><span class="em-bad">告知, イベント, 重要</span></td>
                   </tr>
                   <tr>
                     <td>2</td>
-                    <td>질문있어요</td>
-                    <td><span class="em-bad">질문, 도움요청</span></td>
+                    <td>質問があります</td>
+                    <td><span class="em-bad">質問, ヘルプ募集</span></td>
                   </tr>
                 </table>
-                <div class="norm-note">한 셀에 여러 값이 들어가 있어 검색·수정·집계가 어려워집니다.</div>
+                <div class="norm-note">1セルに複数の値が入っており、検索・更新がしづらい状態です。</div>
               </div>
             </div>
             <div class="norm-case good">
-              <div class="norm-case-head">✅ 1NF 준수</div>
+              <div class="norm-case-head">✅ 1NF 準拠</div>
               <div class="norm-case-body">
-                <div class="norm-caption">태그를 `post_tags` 테이블로 분리해서 한 행에 한 값만 저장</div>
+                <div class="norm-caption">タグを `post_tags` テーブルへ分離して1行1値にする</div>
                 <table class="mini-table">
                   <tr>
                     <th>post_id</th>
@@ -2238,40 +2383,40 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                   </tr>
                   <tr>
                     <td>1</td>
-                    <td><span class="em-good">공지</span></td>
+                    <td><span class="em-good">告知</span></td>
                   </tr>
                   <tr>
                     <td>1</td>
-                    <td><span class="em-good">이벤트</span></td>
+                    <td><span class="em-good">イベント</span></td>
                   </tr>
                   <tr>
                     <td>1</td>
-                    <td><span class="em-good">중요</span></td>
+                    <td><span class="em-good">重要</span></td>
                   </tr>
                   <tr>
                     <td>2</td>
-                    <td><span class="em-good">질문</span></td>
+                    <td><span class="em-good">質問</span></td>
                   </tr>
                 </table>
-                <div class="norm-note">각 행이 하나의 태그만 가지므로 필터링과 정렬이 쉬워집니다.</div>
+                <div class="norm-note">各行が1つのタグだけを持つので、集計や絞り込みがしやすくなります。</div>
               </div>
             </div>
           </div>
 
           <!-- 2NF -->
           <h3 style="margin-top: 28px; margin-bottom: 8px; color: var(--primary-light)">
-            ② 2NF — 부분 종속 제거 (No Partial Dependency)
+            ② 2NF — 部分関数従属の排除（No Partial Dependency）
           </h3>
           <p style="margin-bottom: 12px">
-            복합 기본키를 가진 테이블에서, 일반 컬럼이 <strong>기본키 전체</strong>에 종속되어야 합니다. 기본키의
-            일부에만 종속되면 2NF 위반입니다.
+            複合主キーを持つテーブルでは、一般カラムは <strong>主キー全体</strong> に従属していなければなりません。主キーの
+            一部だけに従属していると 2NF 違反です。
           </p>
 
           <div class="norm-grid">
             <div class="norm-case bad">
-              <div class="norm-case-head">❌ 2NF 위반 (복합키: `post_id + user_id`)</div>
+              <div class="norm-case-head">❌ 2NF 違反（複合キー: `post_id + user_id`）</div>
               <div class="norm-case-body">
-                <div class="norm-caption">`username` 이 복합키 전체가 아니라 `user_id` 에만 종속됨</div>
+                <div class="norm-caption">`username` が複合キー全体ではなく `user_id` のみに従属している</div>
                 <table class="mini-table">
                   <tr>
                     <th>post_id</th>
@@ -2289,13 +2434,13 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     <td><span class="em-bad">alice</span></td>
                   </tr>
                 </table>
-                <div class="norm-note">같은 사용자명이 반복 저장되어 중복과 수정 누락이 생깁니다.</div>
+                <div class="norm-note">同じ `username` が繰り返し保存され、更新漏れの原因になります。</div>
               </div>
             </div>
             <div class="norm-case good">
-              <div class="norm-case-head">✅ 2NF 준수 (`users` 테이블 분리)</div>
+              <div class="norm-case-head">✅ 2NF 準拠（`users` テーブルへ分離）</div>
               <div class="norm-case-body">
-                <div class="norm-caption">좋아요 정보와 사용자 정보를 역할별로 분리</div>
+                <div class="norm-caption">投稿へのいいね情報とユーザー情報を役割ごとに分ける</div>
                 <div class="split-preview">
                   <table class="mini-table">
                     <tr>
@@ -2323,7 +2468,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     </tr>
                   </table>
                 </div>
-                <div class="norm-note">사용자명은 `users` 에만 두면 수정도 한 곳에서 끝납니다.</div>
+                <div class="norm-note">ユーザー名は `users` にだけ置くので、修正は1か所で済みます。</div>
               </div>
             </div>
           </div>
@@ -2331,25 +2476,25 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
           <div class="callout callout-tip" style="margin-bottom: 24px">
             <div class="callout-icon">💡</div>
             <p>
-              우리 게시판의 posts 테이블은 단일 기본키(id)를 사용하므로 2NF 문제가 발생하지 않습니다. 2NF는 주로
-              <strong>복합 기본키</strong>를 쓰는 테이블(예: post_tags, likes)에서 주의해야 합니다.
+              この掲示板の `posts` テーブルは単一主キー（id）なので、2NF の問題は起きません。2NF は主に
+              <strong>複合主キー</strong>を使うテーブル（例: `post_tags`, `likes`）で注意が必要です。
             </p>
           </div>
 
           <!-- 3NF -->
           <h3 style="margin-top: 28px; margin-bottom: 8px; color: var(--primary-light)">
-            ③ 3NF — 이행 종속 제거 (No Transitive Dependency)
+            ③ 3NF — 推移的従属の排除（No Transitive Dependency）
           </h3>
           <p style="margin-bottom: 12px">
-            일반 컬럼이 기본키에만 종속되어야 합니다. <strong>일반 컬럼 A → 일반 컬럼 B</strong> 형태의 종속(이행
-            종속)이 있으면 3NF 위반입니다.
+            一般カラムは主キーにのみ従属すべきです。<strong>一般カラム A → 一般カラム B</strong> のような従属（推移的
+            従属）があると 3NF 違反です。
           </p>
 
           <div class="norm-grid">
             <div class="norm-case bad">
-              <div class="norm-case-head">❌ 3NF 위반</div>
+              <div class="norm-case-head">❌ 3NF 違反</div>
               <div class="norm-case-body">
-                <div class="norm-caption">`posts` 테이블에 사용자 이메일까지 함께 저장한 상태</div>
+                <div class="norm-caption">`posts` テーブルにユーザーのメールアドレスまで持たせている</div>
                 <table class="mini-table">
                   <tr>
                     <th>id</th>
@@ -2359,24 +2504,24 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                   </tr>
                   <tr>
                     <td>1</td>
-                    <td>안녕</td>
+                    <td>お知らせ</td>
                     <td>10</td>
                     <td><span class="em-bad">a@example.com</span></td>
                   </tr>
                   <tr>
                     <td>2</td>
-                    <td>질문</td>
+                    <td>質問</td>
                     <td>10</td>
                     <td><span class="em-bad">a@example.com</span></td>
                   </tr>
                 </table>
-                <div class="norm-note">`id → user_id → user_email` 의 이행 종속 때문에 이메일이 중복됩니다.</div>
+                <div class="norm-note">`id → user_id → user_email` の推移的従属があり、メールアドレスが重複します。</div>
               </div>
             </div>
             <div class="norm-case good">
-              <div class="norm-case-head">✅ 3NF 준수</div>
+              <div class="norm-case-head">✅ 3NF 準拠</div>
               <div class="norm-case-body">
-                <div class="norm-caption">게시글과 사용자 정보를 분리하고 `user_id` 로만 연결</div>
+                <div class="norm-caption">投稿とユーザー情報を分離し、`user_id` でつなぐ</div>
                 <div class="split-preview">
                   <table class="mini-table">
                     <tr>
@@ -2386,12 +2531,12 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     </tr>
                     <tr>
                       <td>1</td>
-                      <td>안녕</td>
+                      <td>お知らせ</td>
                       <td>10</td>
                     </tr>
                     <tr>
                       <td>2</td>
-                      <td>질문</td>
+                      <td>質問</td>
                       <td>10</td>
                     </tr>
                   </table>
@@ -2407,13 +2552,13 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     </tr>
                   </table>
                 </div>
-                <div class="norm-note">이메일은 `users` 에만 저장되므로 중복과 불일치가 사라집니다.</div>
+                <div class="norm-note">メールアドレスは `users` にだけ存在するため、冗長性がなくなります。</div>
               </div>
             </div>
           </div>
 
-          <!-- 정규화 단계 요약표 -->
-          <h3 style="margin-top: 28px; margin-bottom: 12px">정규화 단계 요약</h3>
+          <!-- 正規化の要約表 -->
+          <h3 style="margin-top: 28px; margin-bottom: 12px">正規化ステップの要約</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 13px">
             <thead>
               <tr style="background: var(--surface2)">
@@ -2425,7 +2570,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     color: var(--primary-light);
                   "
                 >
-                  단계
+                  段階
                 </th>
                 <th
                   style="
@@ -2435,7 +2580,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     color: var(--primary-light);
                   "
                 >
-                  조건
+                  条件
                 </th>
                 <th
                   style="
@@ -2445,7 +2590,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     color: var(--primary-light);
                   "
                 >
-                  위반 예시
+                  違反例
                 </th>
                 <th
                   style="
@@ -2455,7 +2600,7 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                     color: var(--primary-light);
                   "
                 >
-                  해결 방법
+                  解決方法
                 </th>
               </tr>
             </thead>
@@ -2464,63 +2609,63 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
                 <td style="padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; color: var(--yellow)">
                   1NF
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">각 칸에 원자값 하나만</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">各セルに原子値を1つだけ</td>
                 <td style="padding: 10px 14px; border: 1px solid var(--border); color: var(--red)">
-                  tags = "공지,이벤트"
+                  tags = "告知,イベント"
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">tags 전용 테이블 분리</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">tags 専用テーブルへ分離</td>
               </tr>
               <tr style="background: var(--surface2)">
                 <td style="padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; color: var(--orange)">
                   2NF
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">부분 종속 없음 (복합키)</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">部分従属がない（複合キー）</td>
                 <td style="padding: 10px 14px; border: 1px solid var(--border); color: var(--red)">
-                  likes에 username 저장
+                  likes に username を保存
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">users 테이블로 분리</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">users テーブルへ分離</td>
               </tr>
               <tr>
                 <td style="padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; color: var(--green)">
                   3NF
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">이행 종속 없음</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">推移的従属がない</td>
                 <td style="padding: 10px 14px; border: 1px solid var(--border); color: var(--red)">
-                  posts에 user_email 저장
+                  posts に user_email を保存
                 </td>
-                <td style="padding: 10px 14px; border: 1px solid var(--border)">users 테이블로 분리</td>
+                <td style="padding: 10px 14px; border: 1px solid var(--border)">users テーブルへ分離</td>
               </tr>
             </tbody>
           </table>
 
-          <!-- 의도적 비정규화 -->
+          <!-- 意図的な非正規化 -->
           <h3 style="margin-top: 32px; margin-bottom: 12px; color: var(--cyan)">
-            의도적 비정규화 — 언제 규칙을 깨는가?
+            意図的な非正規化 — どんなときにルールを崩すのか
           </h3>
           <p style="margin-bottom: 16px">
-            정규화가 항상 정답은 아닙니다. <span class="hl">성능·편의·아키텍처</span> 때문에 의도적으로 정규화를
-            위반하기도 합니다.
+            正規化が常に唯一の正解とは限りません。<span class="hl">性能・利便性・アーキテクチャ</span>の都合で、意図的に
+            正規化を崩すこともあります。
           </p>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px">
             <div class="card" style="border-color: var(--cyan)">
-              <h4 style="margin-top: 0; font-size: 13px; color: var(--cyan)">PostgreSQL 배열 타입</h4>
+              <h4 style="margin-top: 0; font-size: 13px; color: var(--cyan)">PostgreSQL 配列型</h4>
               <p style="margin: 0; font-size: 12px; color: var(--text-muted)">
-                하나의 칸에 여러 값 저장 (1NF 위반). 태그·권한처럼 단순 목록 조회만 하면 별도 테이블보다 빠르고
-                간편합니다.
+                1つのセルに複数値を保存する方法です（1NF 違反）。タグや権限のように単純な一覧参照だけなら、別テーブルより
+                速くて簡単な場合があります。
               </p>
             </div>
             <div class="card" style="border-color: var(--orange)">
-              <h4 style="margin-top: 0; font-size: 13px; color: var(--orange)">MSA (마이크로서비스)</h4>
+              <h4 style="margin-top: 0; font-size: 13px; color: var(--orange)">MSA（マイクロサービス）</h4>
               <p style="margin: 0; font-size: 12px; color: var(--text-muted)">
-                서비스마다 DB가 분리되어 동일한 데이터를 여러 DB에 중복 저장합니다. 독립 배포·확장성을 위한 의도적
-                선택입니다.
+                サービスごとに DB を分離し、同じデータを複数の DB に重複保存します。独立デプロイや拡張性のための
+                意図的な選択です。
               </p>
             </div>
             <div class="card" style="border-color: var(--yellow)">
-              <h4 style="margin-top: 0; font-size: 13px; color: var(--yellow)">캐싱·집계 컬럼</h4>
+              <h4 style="margin-top: 0; font-size: 13px; color: var(--yellow)">キャッシュ・集計カラム</h4>
               <p style="margin: 0; font-size: 12px; color: var(--text-muted)">
-                댓글 수를 매번 COUNT하지 않고 posts.comment_count에 저장. 조회 성능을 위해 중복을 허용합니다.
+                コメント数を毎回 `COUNT` せず、`posts.comment_count` に保存します。参照性能のために重複を許容します。
               </p>
             </div>
           </div>
@@ -2528,9 +2673,9 @@ db.prepare(<span class="str">"DELETE FROM posts WHERE id = ?"</span>).run(id);  
           <div class="callout" style="border-color: var(--primary); background: rgba(124, 106, 247, 0.08)">
             <div class="callout-icon">🎯</div>
             <p>
-              <strong>핵심 원칙:</strong> 정규화는 <strong>기본값</strong>이고, 비정규화는
-              <strong>의도적 예외</strong>입니다. 비정규화할 때는 반드시 <em>왜 깨는지</em>를 팀이 알고 있어야 합니다.
-              이유 없는 비정규화는 버그의 온상이 됩니다.
+              <strong>重要な原則:</strong> 正規化は <strong>基本形</strong> であり、非正規化は
+              <strong>意図的な例外</strong>です。非正規化するときは、<em>なぜ崩すのか</em> をチーム全体で理解しておく必要があります。
+              理由のない非正規化はバグの温床になります。
             </p>
           </div>
         </div>

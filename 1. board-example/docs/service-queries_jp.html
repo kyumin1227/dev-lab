@@ -1,0 +1,1610 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>サービス実践クエリ — 掲示板で学ぶ</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #242736;
+        --border: #2e3148;
+        --primary: #0ea5e9;
+        --primary-light: #38bdf8;
+        --green: #22c55e;
+        --yellow: #fbbf24;
+        --red: #f43f5e;
+        --blue: #6366f1;
+        --orange: #f97316;
+        --cyan: #2dd4bf;
+        --text: #f1f5f9;
+        --text-muted: #b0bbd0;
+        --text-dim: #7d8fa3;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+        line-height: 1.7;
+      }
+
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* ── サイドバー ── */
+      .sidebar {
+        width: 256px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 28px 0 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 20px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .sidebar-back:hover {
+        color: var(--primary-light);
+      }
+      .sidebar-logo {
+        padding: 0 20px 24px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+      }
+      .sidebar-logo .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+      }
+      .sidebar-logo h2 {
+        font-size: 15px;
+        margin-top: 4px;
+      }
+      .sidebar nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .sidebar nav a:hover,
+      .sidebar nav a.active {
+        color: var(--text);
+        background: var(--surface2);
+        border-left-color: var(--primary);
+      }
+      .sidebar nav .sec {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 16px 20px 6px;
+        font-weight: 600;
+      }
+
+      /* ── メイン ── */
+      .main {
+        margin-left: 256px;
+        max-width: 900px;
+        padding: 48px 48px 120px;
+      }
+
+      /* ── セクション ── */
+      .section {
+        margin-bottom: 80px;
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 28px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .section-icon.auth {
+        background: rgba(124, 106, 247, 0.2);
+      }
+      .section-icon.posts {
+        background: rgba(34, 211, 238, 0.15);
+      }
+      .section-icon.comments {
+        background: rgba(74, 222, 128, 0.15);
+      }
+      .section-header h2 {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .section-header .sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        font-size: 14.5px;
+      }
+
+      /* ── ヒーロー ── */
+      .hero {
+        background: linear-gradient(135deg, rgba(124, 106, 247, 0.15), rgba(34, 211, 238, 0.08));
+        border: 1px solid rgba(124, 106, 247, 0.3);
+        border-radius: 12px;
+        padding: 36px 40px;
+        margin-bottom: 56px;
+      }
+      .hero .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+      }
+      .hero h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 10px 0 12px;
+        background: linear-gradient(135deg, #fff 40%, var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero p {
+        font-size: 15px;
+        max-width: 560px;
+        margin: 0;
+      }
+      .hero .chips {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      /* ── クエリカード ── */
+      .query-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+      .query-header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .query-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .q-auth .query-num {
+        background: #7c3aed;
+      }
+      .q-posts .query-num {
+        background: #0891b2;
+      }
+      .q-comments .query-num {
+        background: #15803d;
+      }
+      .query-meta {
+        flex: 1;
+      }
+      .query-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .query-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+      .query-badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+
+      /* ── バッジ ── */
+      .badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+      .badge-get {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      .badge-post {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+      .badge-delete {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+      }
+      .badge-select {
+        background: rgba(14, 165, 233, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(14, 165, 233, 0.3);
+      }
+      .badge-insert {
+        background: rgba(251, 146, 60, 0.15);
+        color: #fb923c;
+        border: 1px solid rgba(251, 146, 60, 0.3);
+      }
+      .badge-del-sql {
+        background: rgba(244, 63, 94, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(244, 63, 94, 0.25);
+      }
+      .badge-join {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+      }
+      .badge-group {
+        background: rgba(45, 212, 191, 0.15);
+        color: #2dd4bf;
+        border: 1px solid rgba(45, 212, 191, 0.3);
+      }
+      .badge-where {
+        background: rgba(124, 106, 247, 0.15);
+        color: #c4b5fd;
+        border: 1px solid rgba(124, 106, 247, 0.3);
+      }
+
+      /* ── コードブロック ── */
+      .code-block {
+        background: #0d1117;
+        border-top: 1px solid var(--border);
+      }
+      .code-header {
+        background: var(--surface2);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .code-block pre {
+        padding: 18px 20px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 13.5px;
+        line-height: 1.75;
+        margin: 0;
+      }
+      .kw {
+        color: #c792ea;
+        font-weight: 600;
+      }
+      .fn {
+        color: #82aaff;
+      }
+      .str {
+        color: #4ade80;
+      }
+      .num {
+        color: #fb923c;
+      }
+      .cmt {
+        color: #64748b;
+        font-style: italic;
+      }
+      .tbl {
+        color: #22d3ee;
+      }
+      .col {
+        color: #facc15;
+      }
+      .op {
+        color: #f87171;
+      }
+      .ph {
+        color: #fb923c;
+        font-style: italic;
+      } /* placeholder ? */
+
+      /* ── 説明エリア ── */
+      .query-explain {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.015);
+      }
+      .explain-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 10px;
+      }
+      .clause-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .clause-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        font-size: 13px;
+      }
+      .clause-kw {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: var(--surface2);
+        color: var(--primary-light);
+        border: 1px solid var(--border);
+      }
+      .clause-text {
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ── コールアウト ── */
+      .callout {
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 12px 20px 16px;
+        font-size: 13px;
+        display: flex;
+        gap: 10px;
+      }
+      .callout-tip {
+        background: rgba(74, 222, 128, 0.08);
+        border-left: 3px solid var(--green);
+      }
+      .callout-warn {
+        background: rgba(250, 204, 21, 0.08);
+        border-left: 3px solid var(--yellow);
+      }
+      .callout-info {
+        background: rgba(96, 165, 250, 0.08);
+        border-left: 3px solid var(--blue);
+      }
+      .callout-icon {
+        font-size: 15px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .callout p {
+        margin: 0;
+        font-size: 13px;
+      }
+      .callout strong {
+        color: var(--text);
+      }
+
+      /* ── フロータグ ── */
+      .flow-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .flow-tag.fe {
+        background: rgba(124, 106, 247, 0.15);
+        color: var(--primary-light);
+      }
+      .flow-tag.be {
+        background: rgba(34, 211, 238, 0.12);
+        color: var(--cyan);
+      }
+      .flow-tag.db {
+        background: rgba(74, 222, 128, 0.12);
+        color: var(--green);
+      }
+
+      /* ── 概要マップ ── */
+      .overview-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        margin: 24px 0;
+      }
+      .overview-col {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .overview-col-head {
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .overview-col-head.auth {
+        background: rgba(124, 106, 247, 0.12);
+      }
+      .overview-col-head.posts {
+        background: rgba(34, 211, 238, 0.1);
+      }
+      .overview-col-head.comments {
+        background: rgba(74, 222, 128, 0.1);
+      }
+      .overview-item {
+        padding: 8px 14px;
+        font-size: 12px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .overview-item:last-child {
+        border-bottom: none;
+      }
+      .overview-item .dot-icon {
+        font-size: 10px;
+      }
+
+      code {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: monospace;
+        font-size: 13px;
+        color: var(--cyan);
+      }
+
+      /* ── テーマ切替 ── */
+      .theme-switch-wrap {
+        margin-top: auto;
+        flex-shrink: 0;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .theme-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+      }
+      .theme-switch input {
+        display: none;
+      }
+      .theme-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .theme-slider::before {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: var(--primary);
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+      .theme-switch input:checked + .theme-slider {
+        background: #ddd8ff;
+        border-color: #a899f8;
+      }
+      .theme-switch input:checked + .theme-slider::before {
+        transform: translateX(22px);
+      }
+      .theme-icon {
+        font-size: 15px;
+        line-height: 1;
+        color: var(--text-muted);
+      }
+
+      /* ── ライトモード ── */
+      body.light {
+        --bg: #f0f2f7;
+        --surface: #ffffff;
+        --surface2: #e4e7f0;
+        --border: #cdd1de;
+        --text: #111827;
+        --text-muted: #374151;
+        --text-dim: #6b7280;
+        --primary: #0284c7;
+        --primary-light: #0369a1;
+        --green: #16a34a;
+        --yellow: #d97706;
+        --red: #dc2626;
+        --blue: #4f46e5;
+        --orange: #ea580c;
+        --cyan: #0d9488;
+      }
+      body.light .code-block {
+        background: #dde0eb;
+      }
+      body.light .code-block pre {
+        background: #dde0eb;
+        color: #111827;
+      }
+      body.light .kw {
+        color: #6d28d9;
+      }
+      body.light .fn {
+        color: #1d4ed8;
+      }
+      body.light .str {
+        color: #15803d;
+      }
+      body.light .num {
+        color: #c2410c;
+      }
+      body.light .cmt {
+        color: #6b7280;
+      }
+      body.light .tbl {
+        color: #0891b2;
+      }
+      body.light .col {
+        color: #b45309;
+      }
+      body.light .op {
+        color: #b91c1c;
+      }
+      body.light .ph {
+        color: #c2410c;
+      }
+      body.light .hero h1 {
+        background: none;
+        -webkit-background-clip: unset;
+        -webkit-text-fill-color: #000;
+      }
+      body.light .query-explain {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      /* ── レスポンシブ ── */
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          margin-left: 0;
+          padding: 24px 20px 80px;
+        }
+        .overview-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <!-- ── サイドバー ── -->
+      <aside class="sidebar">
+        <a href="../index_jp.html" class="sidebar-back">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          学習一覧へ戻る
+        </a>
+        <div class="sidebar-logo">
+          <div class="tag">講義資料</div>
+          <h2>サービス実践クエリ</h2>
+        </div>
+        <nav>
+          <div class="sec">概要</div>
+          <a href="#overview">クエリ一覧</a>
+
+          <div class="sec">認証（auth.js）</div>
+          <a href="#q1">① ユーザー名重複確認</a>
+          <a href="#q2">② 会員登録 INSERT</a>
+          <a href="#q3">③ ログイン用ユーザー取得</a>
+
+          <div class="sec">投稿（posts.js）</div>
+          <a href="#q4">④ 投稿一覧取得</a>
+          <a href="#q5">⑤ 投稿詳細取得</a>
+          <a href="#q6">⑥ 投稿作成</a>
+          <a href="#q7">⑦ 投稿の権限確認</a>
+          <a href="#q8">⑧ コメント一括削除</a>
+          <a href="#q9">⑨ 投稿削除</a>
+
+          <div class="sec">コメント（comments.js）</div>
+          <a href="#q10">⑩ コメント一覧取得</a>
+          <a href="#q11">⑪ 投稿存在確認</a>
+          <a href="#q12">⑫ コメント作成</a>
+          <a href="#q13">⑬ コメントの権限確認</a>
+          <a href="#q14">⑭ コメント削除</a>
+        </nav>
+        <div class="theme-switch-wrap">
+          <span class="theme-icon">🌙</span>
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="theme-slider"></span>
+          </label>
+          <span class="theme-icon">☀️</span>
+        </div>
+      </aside>
+
+      <!-- ── メイン ── -->
+      <main class="main">
+        <!-- ヒーロー -->
+        <div class="hero">
+          <div class="tag">SQL in Practice</div>
+          <h1>掲示板で実際に使う<br />14個のクエリ</h1>
+          <p>
+            私たちが作った掲示板サービス（<code>auth.js</code>、<code>posts.js</code>、<code>comments.js</code>）で実際に
+            使われている SQL クエリを1つずつ見ていきます。どんな場面で実行されるのか、各句が何をしているのかを理解します。
+          </p>
+          <div class="chips">
+            <span class="chip">SELECT</span>
+            <span class="chip">INSERT</span>
+            <span class="chip">DELETE</span>
+            <span class="chip">JOIN</span>
+            <span class="chip">GROUP BY</span>
+            <span class="chip">WHERE</span>
+            <span class="chip">ORDER BY</span>
+          </div>
+        </div>
+
+        <!-- ── 概要 ── -->
+        <div class="section" id="overview">
+          <div class="section-header">
+            <div class="section-icon" style="background: rgba(14, 165, 233, 0.15); font-size: 20px">📋</div>
+            <div>
+              <h2>クエリ一覧</h2>
+              <div class="sub">3つのファイル、14個のクエリ — API リクエスト1回で 1〜2 個のクエリが実行される</div>
+            </div>
+          </div>
+
+          <p>掲示板サービスは大きく3つのルーターファイルに分かれており、それぞれで次のクエリが実行されます。</p>
+
+          <div class="overview-grid">
+            <div class="overview-col">
+              <div class="overview-col-head auth">
+                🔐 auth.js
+                <span style="font-size: 11px; font-weight: 400; color: var(--text-dim); margin-left: 4px">3個</span>
+              </div>
+              <div class="overview-item"><span class="dot-icon">①</span> SELECT — ユーザー名重複確認</div>
+              <div class="overview-item"><span class="dot-icon">②</span> INSERT — 会員登録</div>
+              <div class="overview-item"><span class="dot-icon">③</span> SELECT — ログイン</div>
+            </div>
+            <div class="overview-col">
+              <div class="overview-col-head posts">
+                📝 posts.js
+                <span style="font-size: 11px; font-weight: 400; color: var(--text-dim); margin-left: 4px">6個</span>
+              </div>
+              <div class="overview-item"><span class="dot-icon">④</span> SELECT + JOIN — 一覧</div>
+              <div class="overview-item"><span class="dot-icon">⑤</span> SELECT + JOIN — 詳細</div>
+              <div class="overview-item"><span class="dot-icon">⑥</span> INSERT — 投稿作成</div>
+              <div class="overview-item"><span class="dot-icon">⑦</span> SELECT — 権限確認</div>
+              <div class="overview-item"><span class="dot-icon">⑧</span> DELETE — コメント一括削除</div>
+              <div class="overview-item"><span class="dot-icon">⑨</span> DELETE — 投稿削除</div>
+            </div>
+            <div class="overview-col">
+              <div class="overview-col-head comments">
+                💬 comments.js
+                <span style="font-size: 11px; font-weight: 400; color: var(--text-dim); margin-left: 4px">5個</span>
+              </div>
+              <div class="overview-item"><span class="dot-icon">⑩</span> SELECT + JOIN — コメント一覧</div>
+              <div class="overview-item"><span class="dot-icon">⑪</span> SELECT — 投稿存在確認</div>
+              <div class="overview-item"><span class="dot-icon">⑫</span> INSERT — コメント作成</div>
+              <div class="overview-item"><span class="dot-icon">⑬</span> SELECT — 権限確認</div>
+              <div class="overview-item"><span class="dot-icon">⑭</span> DELETE — コメント削除</div>
+            </div>
+          </div>
+
+          <div class="callout callout-info" style="margin: 0">
+            <div class="callout-icon">💡</div>
+            <p>
+              <strong>読み方:</strong> 各クエリカードでは、まず <span style="color: var(--green)">API パス</span> と
+              <span style="color: var(--yellow)">SQL の種類</span> のバッジを見て、どのリクエストでどのクエリが動くのかを確認します。
+              そのあと、コードブロック下の説明で各句（clause）の役割を見ていきます。
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         認証（auth.js）
+    ══════════════════════════════════════ -->
+        <div class="section" id="s-auth">
+          <div class="section-header">
+            <div class="section-icon auth">🔐</div>
+            <div>
+              <h2>認証 — auth.js</h2>
+              <div class="sub">会員登録・ログイン処理 / routes/auth.js</div>
+            </div>
+          </div>
+
+          <!-- Q1 -->
+          <div class="query-card q-auth" id="q1">
+            <div class="query-header">
+              <div class="query-num">1</div>
+              <div class="query-meta">
+                <div class="query-title">ユーザー名の重複確認</div>
+                <div class="query-desc">
+                  会員登録時に、入力されたユーザー名がすでに存在するかを先に確認します。存在していれば登録を止めて
+                  409 エラーを返します。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/auth/register</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/auth.js — POST /register
+              </div>
+              <pre><span class="kw">SELECT</span> <span class="col">id</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? にはユーザーが入力したユーザー名が入る</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">SELECT id</span>
+                  <span class="clause-text"
+                    >存在確認だけでよいので、<code>id</code> だけを取得します。<code>SELECT *</code> だと不要な
+                    データ（パスワードなど）まで読んでしまうため避けます。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">FROM users</span>
+                  <span class="clause-text">users テーブルを検索します。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">WHERE</span>
+                  <span class="clause-text"
+                    >特定の <code>username</code> を持つ行だけに絞り込みます。<code>?</code> はプレースホルダで、実際の値は
+                    コード側で安全にバインドされます（SQL インジェクション対策）。</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-tip" style="margin-top: 0">
+              <div class="callout-icon">💡</div>
+              <p>
+                <strong>結果があれば</strong> すでに使われているユーザー名なので 409 を返します。<strong>結果がなければ</strong>
+                次の段階（INSERT）へ進みます。
+              </p>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="query-card q-auth" id="q2">
+            <div class="query-header">
+              <div class="query-num">2</div>
+              <div class="query-meta">
+                <div class="query-title">会員登録 — ユーザー追加</div>
+                <div class="query-desc">重複確認を通過したあと、ハッシュ化したパスワードと一緒に新しいユーザーを保存します。</div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/auth/register</span>
+                  <span class="badge badge-insert">INSERT</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/auth.js — POST /register
+              </div>
+              <pre><span class="kw">INSERT INTO</span> <span class="tbl">users</span> (<span class="col">username</span>, <span class="col">password</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>)     <span class="cmt">-- ? : ユーザー名、bcrypt でハッシュ化したパスワード</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">INSERT INTO</span>
+                  <span class="clause-text">指定したテーブルに新しい行を追加します。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">(username, password)</span>
+                  <span class="clause-text"
+                    >値を入れるカラムを明示します。<code>id</code> と <code>created_at</code> は書かなくても DB が
+                    自動で補います。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">VALUES</span>
+                  <span class="clause-text"
+                    >挿入する値を順番に指定します。<code>password</code> はコード側で
+                    <code>bcrypt.hashSync()</code> によりハッシュ化してから渡されます。</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-warn" style="margin-top: 0">
+              <div class="callout-icon">⚠️</div>
+              <p>
+                <strong>パスワードを平文で保存してはいけません。</strong> DB には <code>bcrypt</code> でハッシュ化した値を
+                保存します。ハッシュは一方向なので、元のパスワードを逆算できません。
+              </p>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="query-card q-auth" id="q3">
+            <div class="query-header">
+              <div class="query-num">3</div>
+              <div class="query-meta">
+                <div class="query-title">ログイン — ユーザー取得</div>
+                <div class="query-desc">
+                  ユーザー名でユーザーを検索し、パスワードハッシュを取得します。その後、コード側で入力されたパスワードと
+                  ハッシュを照合して認証します。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/auth/login</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/auth.js — POST /login
+              </div>
+              <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="ph">?</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">SELECT *</span>
+                  <span class="clause-text"
+                    >ユーザーの全カラムを取得します。パスワードハッシュの比較と JWT トークン発行のために <code>id</code>、
+                    <code>username</code>、<code>password</code> のすべてが必要だからです。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">WHERE</span>
+                  <span class="clause-text"
+                    >入力されたユーザー名に一致するユーザー1件だけを取得します。<code>username</code> には
+                    <code>UNIQUE</code> 制約があるため、結果は常に 0 件または 1 件です。</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-tip" style="margin-top: 0">
+              <div class="callout-icon">💡</div>
+              <p>
+                クエリ結果がなければ存在しないユーザー名、結果があっても <code>bcrypt.compareSync()</code> が false なら
+                パスワード不一致です。どちらも同じ 401 として処理します（どちらが間違っているかを明かさない方が安全です）。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         投稿（posts.js）
+    ══════════════════════════════════════ -->
+        <div class="section" id="s-posts">
+          <div class="section-header">
+            <div class="section-icon posts">📝</div>
+            <div>
+              <h2>投稿 — posts.js</h2>
+              <div class="sub">一覧・詳細取得、作成、削除 / routes/posts.js</div>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="query-card q-posts" id="q4">
+            <div class="query-header">
+              <div class="query-num">4</div>
+              <div class="query-meta">
+                <div class="query-title">投稿一覧取得</div>
+                <div class="query-desc">
+                  メイン画面に表示する投稿一覧です。各投稿の投稿者名とコメント数もあわせて取得します。
+                  このサービスの中では最も複雑なクエリです。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-get">GET /api/posts</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-join">JOIN × 2</span>
+                  <span class="badge badge-group">GROUP BY</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — GET /
+              </div>
+              <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">SELECT で列を指定</span>
+                  <span class="clause-text"
+                    >必要なカラムだけを明示的に選びます。<code>posts.id</code> のように <code>テーブル.カラム</code> 形式で
+                    書くのは、2つのテーブルに同名のカラム（<code>id</code>、<code>created_at</code>）があり、
+                    どちらのものか明確にする必要があるためです。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">COUNT(comments.id)</span>
+                  <span class="clause-text"
+                    >各投稿についたコメント数を数えます。<code>COUNT(*)</code> ではなく <code>COUNT(comments.id)</code> を
+                    使うのは、コメントが 0 件の投稿では LEFT JOIN 後の <code>comments.id</code> が NULL になり、
+                    <code>COUNT</code> は NULL を数えないため正しく 0 を返せるからです。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">JOIN users</span>
+                  <span class="clause-text"
+                    >posts テーブルには <code>user_id</code>（数値）しかなく、投稿者名はありません。INNER JOIN で users
+                    テーブルをつなぎ、<code>username</code> を取得します。投稿者は必ず存在する前提なので INNER JOIN を
+                    使っています。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">LEFT JOIN comments</span>
+                  <span class="clause-text"
+                    >コメントが 1 件もない投稿も一覧に出す必要があるため、LEFT JOIN を使います。INNER JOIN にすると
+                    コメントがない投稿は結果から落ちてしまいます。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">GROUP BY posts.id</span>
+                  <span class="clause-text"
+                    >LEFT JOIN によりコメント数ぶん行が増えるため（投稿 1 件にコメント 3 件なら 3 行）、
+                    <code>GROUP BY</code> で投稿単位にまとめ直します。このとき <code>COUNT()</code> が各グループの
+                    コメント数を計算します。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">ORDER BY … DESC</span>
+                  <span class="clause-text">新しい投稿が上に来るように降順で並べます。</span>
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-info" style="margin-top: 0">
+              <div class="callout-icon">🔍</div>
+              <p>
+                <strong>LEFT JOIN と INNER JOIN の違い:</strong> コメントがない投稿も含めるには LEFT JOIN が必須です。
+                INNER JOIN は両方のテーブルで一致する行だけを結果に含めます。
+              </p>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="query-card q-posts" id="q5">
+            <div class="query-header">
+              <div class="query-num">5</div>
+              <div class="query-meta">
+                <div class="query-title">投稿詳細取得</div>
+                <div class="query-desc">特定の投稿 1 件を ID で取得します。詳細ページに入るときに実行されます。</div>
+                <div class="query-badges">
+                  <span class="badge badge-get">GET /api/posts/:id</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-join">JOIN</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — GET /:id
+              </div>
+              <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="op">*</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : URL パラメータ :id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">posts.*</span>
+                  <span class="clause-text"
+                    >posts テーブルの全カラムを取得します。詳細ページではタイトル・本文・作成日時をすべて表示する必要があります。
+                    <code>users.*</code> ではなく <code>posts.*</code> だけを使うのは、users の
+                    <code>password</code> が含まれるのを防ぐためです。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">JOIN users</span>
+                  <span class="clause-text">投稿者名を取得するために JOIN します。考え方は Q4 と同じです。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">WHERE posts.id = ?</span>
+                  <span class="clause-text"
+                    >URL の <code>:id</code> パラメータで特定の投稿 1 件だけに絞ります。<code>id</code> は
+                    PK（主キー）なので、結果は 0 件または 1 件です。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q6 -->
+          <div class="query-card q-posts" id="q6">
+            <div class="query-header">
+              <div class="query-num">6</div>
+              <div class="query-meta">
+                <div class="query-title">投稿作成</div>
+                <div class="query-desc">
+                  ログイン済みユーザーが新しい投稿を作成するときに実行されます。JWT トークンの検証後にのみ動きます。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/posts</span>
+                  <span class="badge badge-insert">INSERT</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — POST /
+              </div>
+              <pre><span class="kw">INSERT INTO</span> <span class="tbl">posts</span> (<span class="col">title</span>, <span class="col">content</span>, <span class="col">user_id</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>, <span class="ph">?</span>)   <span class="cmt">-- ? : タイトル、本文、ログイン中ユーザーの id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">(title, content, user_id)</span>
+                  <span class="clause-text"
+                    >この 3 カラムだけを指定します。<code>id</code> は AUTOINCREMENT、<code>created_at</code> は
+                    DEFAULT CURRENT_TIMESTAMP により DB が自動で埋めます。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">user_id = req.user.id</span>
+                  <span class="clause-text"
+                    >3 つ目の <code>?</code> には JWT トークンから取り出したログイン中ユーザーの ID が入ります。
+                    フロントが直接 user_id を送るのではなく、サーバーがトークンから取り出すので改ざんできません。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q7 -->
+          <div class="query-card q-posts" id="q7">
+            <div class="query-header">
+              <div class="query-num">7</div>
+              <div class="query-meta">
+                <div class="query-title">投稿削除前 — 存在確認と権限確認</div>
+                <div class="query-desc">
+                  削除リクエストが来たら、まず投稿が存在するか、そしてリクエストした人が投稿者本人かを確認します。
+                  このクエリで確認してから実際の削除クエリを実行します。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-delete">DELETE /api/posts/:id</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — DELETE /:id（1段階目: 確認）
+              </div>
+              <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL パラメータ :id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明 + コードとの連携</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">結果なし</span>
+                  <span class="clause-text">投稿が存在しない → コード側で 404 を返す。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">post.user_id を比較</span>
+                  <span class="clause-text"
+                    >取得した <code>post.user_id</code> と JWT トークンの <code>req.user.id</code> をコード側で比較します。
+                    一致しなければ 403 を返します。この判定は SQL ではなく JavaScript で行います。</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-warn" style="margin-top: 0">
+              <div class="callout-icon">⚠️</div>
+              <p>
+                <strong>権限確認は絶対に省略してはいけません。</strong> 確認せずに DELETE を実行すると、誰でも他人の投稿を
+                削除できてしまいます。
+              </p>
+            </div>
+          </div>
+
+          <!-- Q8 -->
+          <div class="query-card q-posts" id="q8">
+            <div class="query-header">
+              <div class="query-num">8</div>
+              <div class="query-meta">
+                <div class="query-title">投稿削除時 — 先にコメントを削除</div>
+                <div class="query-desc">
+                  投稿についたコメントは posts テーブルを参照しています。先に投稿を削除すると参照整合性エラーになるため、
+                  コメントを先に削除します。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-delete">DELETE /api/posts/:id</span>
+                  <span class="badge badge-del-sql">DELETE</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — DELETE /:id（2段階目: コメント削除）
+              </div>
+              <pre><span class="kw">DELETE FROM</span> <span class="tbl">comments</span>
+<span class="kw">WHERE</span>       <span class="col">post_id</span> <span class="op">=</span> <span class="ph">?</span>      <span class="cmt">-- ? : 削除する投稿 id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">DELETE FROM comments</span>
+                  <span class="clause-text">posts テーブルではなく <code>comments</code> テーブルの行を削除します。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">WHERE post_id = ?</span>
+                  <span class="clause-text"
+                    >その投稿についたコメントだけを削除します。WHERE なしで実行すると全コメントが消えてしまうため必須です。</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="callout callout-info" style="margin-top: 0">
+              <div class="callout-icon">💡</div>
+              <p>
+                <strong>実務では CASCADE で自動化することが多いです。</strong>
+                <code>FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE</code> を定義しておけば、
+                投稿削除時にコメントも自動で削除されます。このサービスでは手動で処理しています。
+              </p>
+            </div>
+          </div>
+
+          <!-- Q9 -->
+          <div class="query-card q-posts" id="q9">
+            <div class="query-header">
+              <div class="query-num">9</div>
+              <div class="query-meta">
+                <div class="query-title">投稿削除</div>
+                <div class="query-desc">コメントを先に削除してから、実際の投稿を削除します。Q8 → Q9 の順で実行されます。</div>
+                <div class="query-badges">
+                  <span class="badge badge-delete">DELETE /api/posts/:id</span>
+                  <span class="badge badge-del-sql">DELETE</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/posts.js — DELETE /:id（3段階目: 投稿削除）
+              </div>
+              <pre><span class="kw">DELETE FROM</span> <span class="tbl">posts</span>
+<span class="kw">WHERE</span>       <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : 削除する投稿 id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">実行順の整理</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">① Q7</span>
+                  <span class="clause-text">投稿の存在確認・権限確認（SELECT）</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">② Q8</span>
+                  <span class="clause-text">その投稿のコメントをすべて削除（DELETE FROM comments）</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">③ Q9</span>
+                  <span class="clause-text"
+                    >投稿を削除（DELETE FROM posts）— この順番でないと外部キーエラーなしに削除できません。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         コメント（comments.js）
+    ══════════════════════════════════════ -->
+        <div class="section" id="s-comments">
+          <div class="section-header">
+            <div class="section-icon comments">💬</div>
+            <div>
+              <h2>コメント — comments.js</h2>
+              <div class="sub">コメント一覧・作成・削除 / routes/comments.js</div>
+            </div>
+          </div>
+
+          <!-- Q10 -->
+          <div class="query-card q-comments" id="q10">
+            <div class="query-header">
+              <div class="query-num">10</div>
+              <div class="query-meta">
+                <div class="query-title">コメント一覧取得</div>
+                <div class="query-desc">
+                  投稿詳細ページで、その投稿についたコメントをすべて取得します。投稿者名もあわせて、古い順に並べます。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-get">GET /api/posts/:postId/comments</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-join">JOIN</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/comments.js — GET /
+              </div>
+              <pre><span class="kw">SELECT</span>   <span class="tbl">comments</span>.<span class="op">*</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="ph">?</span>    <span class="cmt">-- ? : URL パラメータ :postId</span>
+<span class="kw">ORDER BY</span> <span class="tbl">comments</span>.<span class="col">created_at</span> <span class="kw">ASC</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">comments.*</span>
+                  <span class="clause-text"
+                    >コメントの全カラムを取得します。Q5 の posts.* と同じ考え方で、users.* は使わないためパスワードが
+                    表に出ることはありません。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">JOIN users</span>
+                  <span class="clause-text"
+                    >comments テーブルには <code>user_id</code> しかないため、JOIN で投稿者名を取得します。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">WHERE comments.post_id = ?</span>
+                  <span class="clause-text"
+                    >その投稿のコメントだけに絞り込みます。この条件がないと全コメントが返ってしまいます。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">ORDER BY … ASC</span>
+                  <span class="clause-text"
+                    >先についたコメントが上に来るように昇順で並べます。投稿一覧（Q4）とは逆方向です。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q11 -->
+          <div class="query-card q-comments" id="q11">
+            <div class="query-header">
+              <div class="query-num">11</div>
+              <div class="query-meta">
+                <div class="query-title">コメント作成前 — 投稿存在確認</div>
+                <div class="query-desc">
+                  コメントを作成する前に、その投稿が本当に存在するかを確認します。削除済みの投稿にコメントが付くのを防ぎます。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/posts/:postId/comments</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/comments.js — POST /（1段階目: 確認）
+              </div>
+              <pre><span class="kw">SELECT</span> <span class="col">id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL パラメータ :postId</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">SELECT id</span>
+                  <span class="clause-text"
+                    >Q1 と同じパターンです。存在確認だけが目的なので <code>id</code> だけを取得します。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">結果なし → 404</span>
+                  <span class="clause-text">投稿がなければ 404 を返し、INSERT は実行しません。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q12 -->
+          <div class="query-card q-comments" id="q12">
+            <div class="query-header">
+              <div class="query-num">12</div>
+              <div class="query-meta">
+                <div class="query-title">コメント作成</div>
+                <div class="query-desc">投稿の存在を確認したあと、コメントを保存します。</div>
+                <div class="query-badges">
+                  <span class="badge badge-post">POST /api/posts/:postId/comments</span>
+                  <span class="badge badge-insert">INSERT</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/comments.js — POST /（2段階目: 挿入）
+              </div>
+              <pre><span class="kw">INSERT INTO</span> <span class="tbl">comments</span> (<span class="col">content</span>, <span class="col">post_id</span>, <span class="col">user_id</span>)
+<span class="kw">VALUES</span> (<span class="ph">?</span>, <span class="ph">?</span>, <span class="ph">?</span>)   <span class="cmt">-- ? : コメント本文、投稿 id、ログイン中ユーザー id</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">post_id</span>
+                  <span class="clause-text"
+                    >URL パラメータ <code>:postId</code> から受け取ります。どの投稿へのコメントかを外部キーで結び付けます。</span
+                  >
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">user_id</span>
+                  <span class="clause-text"
+                    >Q6（投稿作成）と同じく、JWT トークンから取り出した <code>req.user.id</code> が入ります。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q13 -->
+          <div class="query-card q-comments" id="q13">
+            <div class="query-header">
+              <div class="query-num">13</div>
+              <div class="query-meta">
+                <div class="query-title">コメント削除前 — 存在確認と権限確認</div>
+                <div class="query-desc">
+                  Q7（投稿削除前の確認）と同じパターンです。コメントが存在するか、リクエストした人が投稿者本人かを確認します。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-delete">DELETE /api/posts/:postId/comments/:commentId</span>
+                  <span class="badge badge-select">SELECT</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/comments.js — DELETE /:commentId（1段階目: 確認）
+              </div>
+              <pre><span class="kw">SELECT</span> <span class="op">*</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>            <span class="cmt">-- ? : URL パラメータ :commentId</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">各句の説明</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">結果なし → 404</span>
+                  <span class="clause-text">コメントがすでに削除されている、または存在しない場合は 404 を返します。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">comment.user_id を比較</span>
+                  <span class="clause-text"
+                    >取得した <code>comment.user_id</code> と <code>req.user.id</code> を JavaScript で比較します。
+                    一致しなければ 403 を返します。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q14 -->
+          <div class="query-card q-comments" id="q14">
+            <div class="query-header">
+              <div class="query-num">14</div>
+              <div class="query-meta">
+                <div class="query-title">コメント削除</div>
+                <div class="query-desc">
+                  権限確認のあと、コメント 1 件を削除します。投稿削除（Q8〜Q9）と違って、コメントは他テーブルから
+                  参照されていないため 1 回で削除できます。
+                </div>
+                <div class="query-badges">
+                  <span class="badge badge-delete">DELETE /api/posts/:postId/comments/:commentId</span>
+                  <span class="badge badge-del-sql">DELETE</span>
+                  <span class="badge badge-where">WHERE</span>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="dot" style="background: #ff5f57"></div>
+                <div class="dot" style="background: #febc2e"></div>
+                <div class="dot" style="background: #28c840"></div>
+                routes/comments.js — DELETE /:commentId（2段階目: 削除）
+              </div>
+              <pre><span class="kw">DELETE FROM</span> <span class="tbl">comments</span>
+<span class="kw">WHERE</span>       <span class="col">id</span> <span class="op">=</span> <span class="ph">?</span>          <span class="cmt">-- ? : URL パラメータ :commentId</span></pre>
+            </div>
+            <div class="query-explain">
+              <div class="explain-title">投稿削除とコメント削除の比較</div>
+              <div class="clause-list">
+                <div class="clause-item">
+                  <span class="clause-kw">投稿削除</span>
+                  <span class="clause-text">2 段階必要 — 先にコメント（子）を消してから投稿（親）を削除する必要があります。</span>
+                </div>
+                <div class="clause-item">
+                  <span class="clause-kw">コメント削除</span>
+                  <span class="clause-text"
+                    >1 段階で完了 — コメントは他テーブルから参照されていないので、そのまま削除できます。</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const toggle = document.getElementById("themeToggle");
+      toggle.addEventListener("change", () => {
+        document.body.classList.toggle("light", toggle.checked);
+      });
+
+      const sections = document.querySelectorAll("[id]");
+      const navLinks = document.querySelectorAll(".sidebar nav a");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              navLinks.forEach((a) => a.classList.remove("active"));
+              const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-30% 0px -60% 0px" },
+      );
+      sections.forEach((s) => observer.observe(s));
+    </script>
+  </body>
+</html>

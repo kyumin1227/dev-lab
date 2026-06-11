@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SQLクエリの書き方 — 掲示板で学ぶ</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #242736;
+        --border: #2e3148;
+        --primary: #0ea5e9;
+        --primary-light: #38bdf8;
+        --green: #22c55e;
+        --yellow: #fbbf24;
+        --red: #f43f5e;
+        --blue: #6366f1;
+        --orange: #f97316;
+        --cyan: #2dd4bf;
+        --purple: #a855f7;
+        --text: #f1f5f9;
+        --text-muted: #b0bbd0;
+        --text-dim: #7d8fa3;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+        line-height: 1.7;
+      }
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* ── 사이드바 ── */
+      .sidebar {
+        width: 256px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 28px 0 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 20px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .sidebar-back:hover {
+        color: var(--primary-light);
+      }
+      .sidebar-logo {
+        padding: 0 20px 24px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+      }
+      .sidebar-logo .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+      }
+      .sidebar-logo h2 {
+        font-size: 15px;
+        margin-top: 4px;
+      }
+      .sidebar nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .sidebar nav a:hover,
+      .sidebar nav a.active {
+        color: var(--text);
+        background: var(--surface2);
+        border-left-color: var(--primary);
+      }
+      .sidebar nav .sec {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 16px 20px 6px;
+        font-weight: 600;
+      }
+
+      /* ── 메인 ── */
+      .main {
+        margin-left: 256px;
+        max-width: 900px;
+        padding: 48px 48px 120px;
+      }
+
+      /* ── 섹션 ── */
+      .section {
+        margin-bottom: 80px;
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 28px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .section-num {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .section-header h2 {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .section-header .sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      h3 {
+        font-size: 16px;
+        margin: 32px 0 12px;
+        color: var(--text);
+      }
+      h3.sub-h {
+        font-size: 15px;
+        margin: 24px 0 10px;
+        color: var(--text);
+      }
+      p {
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        font-size: 14.5px;
+      }
+
+      /* ── 히어로 ── */
+      .hero {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(168, 85, 247, 0.08));
+        border: 1px solid rgba(14, 165, 233, 0.3);
+        border-radius: 12px;
+        padding: 36px 40px;
+        margin-bottom: 56px;
+      }
+      .hero .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+      }
+      .hero h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 10px 0 12px;
+        background: linear-gradient(135deg, #fff 40%, var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero p {
+        font-size: 15px;
+        max-width: 560px;
+        margin: 0;
+      }
+      .hero .chips {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      /* ── 코드 블록 ── */
+      .code-block {
+        background: #0d1117;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 14px 0;
+      }
+      .code-header {
+        background: var(--surface2);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .code-block pre {
+        padding: 18px 20px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 13.5px;
+        line-height: 1.75;
+        margin: 0;
+      }
+      .kw {
+        color: #c792ea;
+        font-weight: 600;
+      }
+      .fn {
+        color: #82aaff;
+      }
+      .str {
+        color: #4ade80;
+      }
+      .num {
+        color: #fb923c;
+      }
+      .cmt {
+        color: #64748b;
+        font-style: italic;
+      }
+      .tbl {
+        color: #22d3ee;
+      }
+      .col {
+        color: #facc15;
+      }
+      .op {
+        color: #f87171;
+      }
+      .ph {
+        color: #fb923c;
+        font-style: italic;
+      }
+
+      /* ── 실행 예시 박스 ── */
+      .run-box {
+        background: rgba(34, 197, 94, 0.06);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 14px 0;
+      }
+      .run-header {
+        background: rgba(34, 197, 94, 0.12);
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--green);
+        border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .run-box pre {
+        padding: 14px 18px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 13px;
+        line-height: 1.7;
+        margin: 0;
+        color: var(--text-muted);
+      }
+      .run-result {
+        background: rgba(255, 255, 255, 0.025);
+        border-top: 1px solid rgba(34, 197, 94, 0.15);
+        padding: 10px 18px;
+        font-size: 12px;
+        color: var(--text-dim);
+        font-family: monospace;
+      }
+
+      /* ── 카드 ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+
+      /* ── 콜아웃 ── */
+      .callout {
+        border-radius: 8px;
+        padding: 13px 16px;
+        margin: 14px 0;
+        font-size: 13.5px;
+        display: flex;
+        gap: 12px;
+      }
+      .callout-tip {
+        background: rgba(74, 222, 128, 0.08);
+        border-left: 3px solid var(--green);
+      }
+      .callout-warn {
+        background: rgba(250, 204, 21, 0.08);
+        border-left: 3px solid var(--yellow);
+      }
+      .callout-info {
+        background: rgba(96, 165, 250, 0.08);
+        border-left: 3px solid var(--blue);
+      }
+      .callout-purple {
+        background: rgba(168, 85, 247, 0.08);
+        border-left: 3px solid var(--purple);
+      }
+      .callout-icon {
+        font-size: 15px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .callout p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+      .callout strong {
+        color: var(--text);
+      }
+
+      /* ── 절 구조 다이어그램 ── */
+      .clause-flow {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 18px 0;
+      }
+      .clause-row {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+      }
+      .clause-row:last-child {
+        border-bottom: none;
+      }
+      .clause-kw-cell {
+        width: 160px;
+        flex-shrink: 0;
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        border-right: 1px solid var(--border);
+      }
+      .clause-desc-cell {
+        flex: 1;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+      }
+      .clause-req {
+        font-size: 11px;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-left: auto;
+      }
+      .req-y {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+      }
+      .req-n {
+        background: rgba(100, 116, 139, 0.15);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+
+      /* ── 실행 순서 다이어그램 ── */
+      .exec-order {
+        display: flex;
+        gap: 0;
+        margin: 20px 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .exec-step {
+        flex: 1;
+        padding: 14px 10px;
+        text-align: center;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .exec-step:last-child {
+        border-right: none;
+      }
+      .exec-order-num {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .exec-kw {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .exec-desc {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-align: center;
+        line-height: 1.4;
+      }
+      .exec-step.active {
+        background: rgba(14, 165, 233, 0.06);
+      }
+
+      /* ── 연산자 표 ── */
+      table.op-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        margin: 14px 0;
+      }
+      table.op-table th {
+        background: var(--surface2);
+        padding: 9px 14px;
+        text-align: left;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+      table.op-table td {
+        padding: 9px 14px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      table.op-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      table.op-table .mono {
+        font-family: monospace;
+        color: var(--cyan);
+        font-size: 13px;
+      }
+
+      /* ── JOIN 벤 다이어그램 ── */
+      .join-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 18px 0;
+      }
+      .join-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .join-card-head {
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .join-card-head.inner {
+        background: rgba(14, 165, 233, 0.12);
+        color: var(--primary-light);
+      }
+      .join-card-head.left {
+        background: rgba(124, 106, 247, 0.12);
+        color: #a5b4fc;
+      }
+      .join-card-head.right {
+        background: rgba(249, 115, 22, 0.12);
+        color: #fdba74;
+      }
+      .join-card-head.cross {
+        background: rgba(244, 63, 94, 0.1);
+        color: #fb7185;
+      }
+      .join-body {
+        padding: 12px 14px;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .join-venn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 0;
+        font-size: 28px;
+        letter-spacing: -4px;
+      }
+
+      /* ── 집계 함수 그리드 ── */
+      .agg-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 18px 0;
+      }
+      .agg-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 16px;
+      }
+      .agg-name {
+        font-family: monospace;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .agg-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      code {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: monospace;
+        font-size: 13px;
+        color: var(--cyan);
+      }
+
+      .hl {
+        color: var(--primary-light);
+        font-weight: 600;
+      }
+
+      /* ── 테마 토글 ── */
+      .theme-switch-wrap {
+        margin-top: auto;
+        flex-shrink: 0;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .theme-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+      }
+      .theme-switch input {
+        display: none;
+      }
+      .theme-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .theme-slider::before {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: var(--primary);
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+      .theme-switch input:checked + .theme-slider {
+        background: #ddd8ff;
+        border-color: #a899f8;
+      }
+      .theme-switch input:checked + .theme-slider::before {
+        transform: translateX(22px);
+      }
+      .theme-icon {
+        font-size: 15px;
+        line-height: 1;
+        color: var(--text-muted);
+      }
+
+      /* ── 라이트 모드 ── */
+      body.light {
+        --bg: #f0f2f7;
+        --surface: #ffffff;
+        --surface2: #e4e7f0;
+        --border: #cdd1de;
+        --text: #111827;
+        --text-muted: #374151;
+        --text-dim: #6b7280;
+        --primary: #0284c7;
+        --primary-light: #0369a1;
+        --green: #16a34a;
+        --yellow: #d97706;
+        --red: #dc2626;
+        --blue: #4f46e5;
+        --orange: #ea580c;
+        --cyan: #0d9488;
+      }
+      body.light .code-block {
+        background: #dde0eb;
+      }
+      body.light .code-block pre {
+        background: #dde0eb;
+        color: #111827;
+      }
+      body.light .run-box {
+        background: rgba(22, 163, 74, 0.04);
+      }
+      body.light .run-header {
+        background: rgba(22, 163, 74, 0.1);
+      }
+      body.light .run-box pre {
+        color: #374151;
+      }
+      body.light .kw {
+        color: #6d28d9;
+      }
+      body.light .fn {
+        color: #1d4ed8;
+      }
+      body.light .str {
+        color: #15803d;
+      }
+      body.light .num {
+        color: #c2410c;
+      }
+      body.light .cmt {
+        color: #6b7280;
+      }
+      body.light .tbl {
+        color: #0891b2;
+      }
+      body.light .col {
+        color: #b45309;
+      }
+      body.light .op {
+        color: #b91c1c;
+      }
+      body.light .ph {
+        color: #c2410c;
+      }
+      body.light .hero h1 {
+        background: none;
+        -webkit-background-clip: unset;
+        -webkit-text-fill-color: #000;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          margin-left: 0;
+          padding: 24px 20px 80px;
+        }
+        .join-grid {
+          grid-template-columns: 1fr;
+        }
+        .agg-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .exec-order {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <!-- ── サイドバー ── -->
+      <aside class="sidebar">
+        <a href="../index_jp.html" class="sidebar-back">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          学習一覧へ戻る
+        </a>
+        <div class="sidebar-logo">
+          <div class="tag">講義資料</div>
+          <h2>SQLクエリの書き方</h2>
+        </div>
+        <nav>
+          <div class="sec">基礎</div>
+          <a href="#s1">① SELECT の基本構造</a>
+          <a href="#s2">② 実行順序</a>
+
+          <div class="sec">条件・フィルタ</div>
+          <a href="#s3">③ WHERE 条件の書き方</a>
+
+          <div class="sec">テーブル結合</div>
+          <a href="#s4">④ JOIN の基本原理</a>
+
+          <div class="sec">集計</div>
+          <a href="#s5">⑤ 集計関数</a>
+          <a href="#s6">⑥ GROUP BY & HAVING</a>
+
+          <div class="sec">応用</div>
+          <a href="#s7">⑦ サブクエリ</a>
+          <a href="#s8">⑧ ORDER BY & LIMIT</a>
+        </nav>
+        <div class="theme-switch-wrap">
+          <span class="theme-icon">🌙</span>
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="theme-slider"></span>
+          </label>
+          <span class="theme-icon">☀️</span>
+        </div>
+      </aside>
+
+      <!-- ── メイン ── -->
+      <main class="main">
+        <div class="hero">
+          <div class="tag">SQL Concepts</div>
+          <h1>SELECT クエリは、<br />どう書くのか</h1>
+          <p>
+            クエリを構成する各句の役割と、正しい記述順を理解します。すべての例は掲示板DB（<code>board.db</code>）で
+            そのまま実行できます。
+          </p>
+          <div class="chips">
+            <span class="chip">sqlite3 board.db</span>
+            <span class="chip">users · posts · comments</span>
+            <span class="chip">seed.sql 適用後に実行</span>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ① SELECT の基本構造
+    ══════════════════════════════════════ -->
+        <div class="section" id="s1">
+          <div class="section-header">
+            <div class="section-num">1</div>
+            <div>
+              <h2>SELECT の基本構造</h2>
+              <div class="sub">クエリを構成する主な句（clause）</div>
+            </div>
+          </div>
+
+          <p>
+            SELECT クエリは複数の句で構成されます。<span class="hl">最低限必要なのは SELECT と FROM</span>で、ほかは必要なときだけ使います。
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <div class="dot" style="background: #ff5f57"></div>
+              <div class="dot" style="background: #febc2e"></div>
+              <div class="dot" style="background: #28c840"></div>
+              SELECT の全体像
+            </div>
+            <pre><span class="kw">SELECT</span>   <span class="col">カラム1</span>, <span class="col">カラム2</span>, ...      <span class="cmt">-- ① 取得するカラム（必須）</span>
+<span class="kw">FROM</span>     <span class="tbl">テーブル名</span>              <span class="cmt">-- ② どのテーブルから取るか（必須）</span>
+<span class="kw">WHERE</span>    <span class="col">条件</span>                  <span class="cmt">-- ③ 行の絞り込み（任意）</span>
+<span class="kw">GROUP BY</span> <span class="col">基準カラム</span>             <span class="cmt">-- ④ グループ化（任意）</span>
+<span class="kw">HAVING</span>   <span class="col">グループ条件</span>           <span class="cmt">-- ⑤ グループの絞り込み（任意）</span>
+<span class="kw">ORDER BY</span> <span class="col">並び替え基準</span>         <span class="cmt">-- ⑥ 並び替え（任意）</span>
+<span class="kw">LIMIT</span>    <span class="num">n</span>                     <span class="cmt">-- ⑦ 件数制限（任意）</span></pre>
+          </div>
+
+          <div class="clause-flow">
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #c792ea">SELECT</div>
+              <div class="clause-desc-cell">
+                取得するカラムを指定します。<code>*</code> は全カラム、<code>テーブル名.カラム名</code> と書けば出どころも明確になります。
+              </div>
+              <span class="clause-req req-y">必須</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #22d3ee">FROM</div>
+              <div class="clause-desc-cell">
+                データを取得するテーブルを指定します。JOIN を使う場合も、この句でテーブルをつなぎます。
+              </div>
+              <span class="clause-req req-y">必須</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #f87171">WHERE</div>
+              <div class="clause-desc-cell">
+                条件に合う行だけを残します。GROUP BY より前に実行されるため、集計結果を条件には使えません。
+              </div>
+              <span class="clause-req req-n">任意</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #2dd4bf">GROUP BY</div>
+              <div class="clause-desc-cell">
+                指定したカラムごとに行をまとめます。COUNT や SUM などの集計関数と一緒に使います。
+              </div>
+              <span class="clause-req req-n">任意</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #fbbf24">HAVING</div>
+              <div class="clause-desc-cell">
+                GROUP BY で作られたグループに条件を付けます。COUNT や SUM などの集計結果を条件に使えます。
+              </div>
+              <span class="clause-req req-n">任意</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #82aaff">ORDER BY</div>
+              <div class="clause-desc-cell">
+                結果を並び替えます。<code>ASC</code> は昇順（初期値）、<code>DESC</code> は降順です。
+              </div>
+              <span class="clause-req req-n">任意</span>
+            </div>
+            <div class="clause-row">
+              <div class="clause-kw-cell" style="color: #fb923c">LIMIT</div>
+              <div class="clause-desc-cell">
+                返す行数の上限を指定します。<code>OFFSET n</code> と組み合わせればページネーションにも使えます。
+              </div>
+              <span class="clause-req req-n">任意</span>
+            </div>
+          </div>
+
+          <h3>掲示板の例 — いちばん簡単な形から</h3>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — ユーザー一覧を取得</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>;</pre>
+            <div class="run-result">→ `users` テーブルの全行から、`id`・`username`・`created_at` の3列を返す</div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 新しい投稿を5件取得</div>
+            <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+            <div class="run-result">→ もっとも新しく作成された投稿を5件返す</div>
+          </div>
+
+          <div class="callout callout-tip">
+            <div class="callout-icon">💡</div>
+            <p>
+              <strong>`SELECT *` はできるだけ避けましょう。</strong> 必要なカラムだけ明示すると通信量を減らせて、何のデータを使っているかも一目で分かります。
+              `users` テーブルで <code>SELECT *</code> を使うと、パスワードハッシュまで一緒に返ってしまいます。
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ② 実行順序
+    ══════════════════════════════════════ -->
+        <div class="section" id="s2">
+          <div class="section-header">
+            <div class="section-num">2</div>
+            <div>
+              <h2>実行順序</h2>
+              <div class="sub">書く順番と実際に実行される順番は違う</div>
+            </div>
+          </div>
+
+          <p>
+            SQL は <span class="hl">書く順番と実行される順番が一致しません。</span> ここを理解すると、「なぜ WHERE で SELECT の別名を使えないのか」が自然に分かります。
+          </p>
+
+          <div class="exec-order">
+            <div class="exec-step active">
+              <div class="exec-order-num" style="background: #22c55e">1</div>
+              <div class="exec-kw" style="color: #22d3ee">FROM + JOIN</div>
+              <div class="exec-desc">テーブルの選択・結合</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #3b82f6">2</div>
+              <div class="exec-kw" style="color: #f87171">WHERE</div>
+              <div class="exec-desc">行の絞り込み</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #8b5cf6">3</div>
+              <div class="exec-kw" style="color: #2dd4bf">GROUP BY</div>
+              <div class="exec-desc">グループ化</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #f59e0b">4</div>
+              <div class="exec-kw" style="color: #fbbf24">HAVING</div>
+              <div class="exec-desc">グループの絞り込み</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #ec4899">5</div>
+              <div class="exec-kw" style="color: #c792ea">SELECT</div>
+              <div class="exec-desc">カラム選択・別名付け</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #6366f1">6</div>
+              <div class="exec-kw" style="color: #a5b4fc">DISTINCT</div>
+              <div class="exec-desc">重複除去</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #14b8a6">7</div>
+              <div class="exec-kw" style="color: #82aaff">ORDER BY</div>
+              <div class="exec-desc">並び替え</div>
+            </div>
+            <div class="exec-step">
+              <div class="exec-order-num" style="background: #64748b">8</div>
+              <div class="exec-kw" style="color: #fb923c">LIMIT / OFFSET</div>
+              <div class="exec-desc">件数制限・ページネーション</div>
+            </div>
+          </div>
+
+          <div class="callout callout-warn">
+            <div class="callout-icon">⚠️</div>
+            <p>
+              <strong>SELECT は5番目に実行されます。</strong> そのため WHERE 句（2番目）では、SELECT で付けた別名（AS）を使えません。ORDER BY は後で実行されるので、SELECT の別名が使えます。
+            </p>
+          </div>
+
+          <h3>実行順序が大事な理由 — 例で確認</h3>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="dot" style="background: #ff5f57"></div>
+              <div class="dot" style="background: #febc2e"></div>
+              <div class="dot" style="background: #28c840"></div>
+              WHERE で SELECT の別名を使うとエラーになる
+            </div>
+            <pre><span class="cmt">-- ❌ エラー: WHERE は SELECT より先に実行されるため、別名をまだ知らない</span>
+<span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">cnt</span> <span class="op">></span> <span class="num">5</span>;        <span class="cmt">-- cnt はまだ定義されていない</span>
+
+<span class="cmt">-- ✅ 正しい書き方: 集計結果への条件は HAVING に書く</span>
+<span class="kw">SELECT</span>   <span class="col">post_id</span>, <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">GROUP BY</span> <span class="col">post_id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="op">></span> <span class="num">5</span>;</pre>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — コメントが2件以上ある投稿だけを見る</div>
+            <pre><span class="kw">SELECT</span>   <span class="col">post_id</span>,
+         <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>          <span class="cmt">-- ① テーブルを選ぶ</span>
+<span class="cmt">--                            ② WHERE なし（全件対象）</span>
+<span class="kw">GROUP BY</span> <span class="col">post_id</span>           <span class="cmt">-- ③ 投稿ごとにグループ化</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>   <span class="cmt">-- ④ 2件以上のグループだけ残す</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>; <span class="cmt">-- ⑥ 多い順に並べる</span></pre>
+            <div class="run-result">→ コメントが2件以上付いた投稿一覧を、コメント数の多い順で返す</div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ③ WHERE 条件の書き方
+    ══════════════════════════════════════ -->
+        <div class="section" id="s3">
+          <div class="section-header">
+            <div class="section-num">3</div>
+            <div>
+              <h2>WHERE 条件の書き方</h2>
+              <div class="sub">比較・論理・パターン・範囲・一覧・NULL の扱い</div>
+            </div>
+          </div>
+
+          <p>WHERE 句ではさまざまな演算子が使えます。条件が <code>true</code> になる行だけが結果に含まれます。</p>
+
+          <h3>比較演算子</h3>
+          <table class="op-table">
+            <tr>
+              <th>演算子</th>
+              <th>意味</th>
+              <th>掲示板での例</th>
+            </tr>
+            <tr>
+              <td class="mono">=</td>
+              <td>等しい</td>
+              <td><code>user_id = 1</code></td>
+            </tr>
+            <tr>
+              <td class="mono">!= または &lt;&gt;</td>
+              <td>等しくない</td>
+              <td><code>user_id != 1</code></td>
+            </tr>
+            <tr>
+              <td class="mono">&gt; / &gt;=</td>
+              <td>大きい / 以上</td>
+              <td><code>id > 10</code></td>
+            </tr>
+            <tr>
+              <td class="mono">&lt; / &lt;=</td>
+              <td>小さい / 以下</td>
+              <td><code>id <= 50</code></td>
+            </tr>
+          </table>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — `user_id` が 1 の投稿だけを取得</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>;</pre>
+            <div class="run-result">→ `alice`（id=1）が書いた投稿だけを返す</div>
+          </div>
+
+          <h3>論理演算子 — AND / OR / NOT</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 複数条件を組み合わせる</div>
+            <pre><span class="cmt">-- AND: 2つの条件をどちらも満たす行</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>
+  <span class="kw">AND</span>  <span class="col">id</span> <span class="op"><=</span> <span class="num">50</span>;
+
+<span class="cmt">-- OR: どちらか一方でも満たす行</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">1</span>
+  <span class="kw">OR</span>   <span class="col">user_id</span> <span class="op">=</span> <span class="num">2</span>;</pre>
+            <div class="run-result">→ 1つ目は「alice が書いた投稿かつ id が 50 以下」、2つ目は「alice または bob の投稿」</div>
+          </div>
+
+          <h3>LIKE — パターン検索</h3>
+          <p><code>%</code> は 0 文字以上の任意文字列、<code>_</code> はちょうど 1 文字の任意文字を意味します。</p>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — タイトルに "JOIN" を含む投稿</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%JOIN%'</span>;     <span class="cmt">-- 前後どこでも JOIN を含む</span></pre>
+            <div class="run-result">→ たとえば「JOIN 完全攻略」「NATURAL JOIN 入門」など、タイトルに JOIN を含む投稿</div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — ユーザー名が `a` で始まるユーザー</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">username</span> <span class="kw">LIKE</span> <span class="str">'a%'</span>;       <span class="cmt">-- a で始まるすべてのユーザー名</span></pre>
+            <div class="run-result">→ `alice` を返す</div>
+          </div>
+
+          <h3>BETWEEN — 範囲条件</h3>
+          <div class="callout callout-info">
+            <div class="callout-icon">ℹ️</div>
+            <p>
+              <strong>`BETWEEN a AND b`</strong> は、`a` 以上 `b` 以下（両端を含む）です。
+              <code>WHERE id >= 10 AND id <= 20</code> と同じ意味です。
+            </p>
+          </div>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — id が 10〜20 の投稿</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">id</span> <span class="kw">BETWEEN</span> <span class="num">10</span> <span class="kw">AND</span> <span class="num">20</span>;</pre>
+            <div class="run-result">→ id が 10, 11, 12 ... 20 の投稿を返す</div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 2024年2月に作成された投稿</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">BETWEEN</span> <span class="str">'2024-02-01'</span> <span class="kw">AND</span> <span class="str">'2024-02-29 23:59:59'</span>;</pre>
+            <div class="run-result">→ 2024年2月の1か月間に作成された投稿を返す</div>
+          </div>
+
+          <h3>IN — 一覧条件</h3>
+          <p>
+            <code>IN (値1, 値2, ...)</code> は、一覧のどれか1つに一致する行を返します。OR を何回も書くより簡潔です。
+          </p>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 特定ユーザーたちの投稿</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">IN</span> (<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>);    <span class="cmt">-- alice, carol, eve の投稿</span></pre>
+            <div class="run-result">→ `alice`・`carol`・`eve` の3人が書いた投稿を返す（OR を3つ書くのと同じ）</div>
+          </div>
+
+          <h3>IS NULL / IS NOT NULL</h3>
+          <div class="callout callout-warn">
+            <div class="callout-icon">⚠️</div>
+            <p>
+              <strong>NULL は <code>= NULL</code> で比較してはいけません。</strong> NULL は「値がない」を意味するため、比較結果は常に unknown になります。必ず <code>IS NULL</code> か <code>IS NOT NULL</code> を使います。
+            </p>
+          </div>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 考え方の確認（掲示板テーブルには NULL なし）</div>
+            <pre><span class="cmt">-- NULL を正しく比較する方法</span>
+<span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">IS NOT NULL</span>;  <span class="cmt">-- created_at があるユーザー</span>
+
+<span class="cmt">-- ❌ 誤った書き方（常に 0 行になる）</span>
+<span class="cmt">-- WHERE created_at = NULL</span></pre>
+            <div class="run-result">→ `created_at` を持つすべてのユーザーを返す（この掲示板では全ユーザー）</div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ④ JOIN の基本原理
+    ══════════════════════════════════════ -->
+        <div class="section" id="s4">
+          <div class="section-header">
+            <div class="section-num">4</div>
+            <div>
+              <h2>JOIN の基本原理</h2>
+              <div class="sub">複数テーブルのデータを1つに結びつける</div>
+            </div>
+          </div>
+
+          <p>
+            投稿テーブルには、作成者を表す <code>user_id</code>（数値）しか入っていません。画面に名前を出したいなら、`users` テーブルと
+            <span class="hl">JOIN</span> して取得する必要があります。
+          </p>
+
+          <div class="code-block">
+            <div class="code-header">
+              <div class="dot" style="background: #ff5f57"></div>
+              <div class="dot" style="background: #febc2e"></div>
+              <div class="dot" style="background: #28c840"></div>
+              JOIN の基本構文
+            </div>
+            <pre><span class="kw">SELECT</span> ...
+<span class="kw">FROM</span>   <span class="tbl">テーブルA</span>
+<span class="kw">JOIN</span>   <span class="tbl">テーブルB</span> <span class="kw">ON</span> <span class="tbl">テーブルA</span>.<span class="col">結合カラム</span> <span class="op">=</span> <span class="tbl">テーブルB</span>.<span class="col">結合カラム</span></pre>
+          </div>
+
+          <div class="join-grid">
+            <div class="join-card">
+              <div class="join-card-head inner">INNER JOIN</div>
+              <div class="join-venn">🔵🟣🔴 → 🟣</div>
+              <div class="join-body">
+                <strong style="color: var(--text)">両方のテーブルで一致する行だけを返す</strong><br />
+                掲示板では、投稿と作成者の両方が存在する場合だけ結果に含まれます。<br />
+                <code style="margin-top: 6px; display: inline-block">JOIN</code> とだけ書いた場合も INNER JOIN です。
+              </div>
+            </div>
+            <div class="join-card">
+              <div class="join-card-head left">LEFT JOIN</div>
+              <div class="join-venn">🔵🟣🔴 → 🔵🟣</div>
+              <div class="join-body">
+                <strong style="color: var(--text)">左側テーブルの全行を残し、右側に対応がなければ NULL にする</strong><br />
+                掲示板では、コメントがない投稿も一覧に出したいときに使います。
+              </div>
+            </div>
+            <div class="join-card">
+              <div class="join-card-head right">RIGHT JOIN</div>
+              <div class="join-venn">🔵🟣🔴 → 🟣🔴</div>
+              <div class="join-body">
+                <strong style="color: var(--text)">右側テーブルの全行を残し、左側に対応がなければ NULL にする</strong><br />
+                SQLite は RIGHT JOIN をサポートしていないため、テーブル順を入れ替えて LEFT JOIN で代用します。
+              </div>
+            </div>
+            <div class="join-card">
+              <div class="join-card-head cross">CROSS JOIN（注意）</div>
+              <div class="join-venn">A×B → 全組み合わせ</div>
+              <div class="join-body">
+                <strong style="color: var(--text)">ON を使わず、2つのテーブルの全組み合わせを作る</strong><br />
+                users が 20 人、posts が 100 件なら 2,000 行が生成されます。意図せず起きると性能問題の原因になります。
+              </div>
+            </div>
+          </div>
+
+          <h3>INNER JOIN — 投稿を作成者名つきで取得する</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 投稿 + 作成者名（INNER JOIN）</div>
+            <pre><span class="kw">SELECT</span>  <span class="tbl">posts</span>.<span class="col">id</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span> <span class="kw">AS</span> <span class="col">author</span>
+<span class="kw">FROM</span>    <span class="tbl">posts</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+            <div class="run-result">→ `id`、`title`、作成者名の3列を返す（作成者がいない投稿は除外）</div>
+          </div>
+
+          <h3>LEFT JOIN — コメント数つき一覧（コメントなし投稿も含む）</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 投稿一覧 + コメント数（LEFT JOIN）</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+            <div class="run-result">
+              → コメント数の多い投稿を上位10件返す。コメントが0件の投稿も `comment_count = 0` として含まれる
+            </div>
+          </div>
+
+          <h3>3テーブルを JOIN する</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — コメント + 投稿タイトル + コメント投稿者</div>
+            <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">id</span>       <span class="kw">AS</span> <span class="col">comment_id</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>          <span class="kw">AS</span> <span class="col">post_title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>       <span class="kw">AS</span> <span class="col">commenter</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+            <div class="run-result">→ コメント内容、対象投稿のタイトル、コメント投稿者名をまとめて取得する</div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ⑤ 集計関数
+    ══════════════════════════════════════ -->
+        <div class="section" id="s5">
+          <div class="section-header">
+            <div class="section-num">5</div>
+            <div>
+              <h2>集計関数</h2>
+              <div class="sub">複数行を1つの値にまとめる</div>
+            </div>
+          </div>
+
+          <p>
+            集計関数は複数行の値を受け取り、<span class="hl">1つの値</span>にまとめます。GROUP BY と組み合わせると、グループごとの集計ができます。
+          </p>
+
+          <div class="agg-grid">
+            <div class="agg-card">
+              <div class="agg-name" style="color: #38bdf8">COUNT()</div>
+              <div class="agg-desc">
+                行数を数えます。<br /><code>COUNT(*)</code> は全行、<br /><code>COUNT(カラム)</code> は NULL を除いた件数です
+              </div>
+            </div>
+            <div class="agg-card">
+              <div class="agg-name" style="color: #4ade80">SUM()</div>
+              <div class="agg-desc">数値カラムの合計を求めます。<br />NULL は無視されます。</div>
+            </div>
+            <div class="agg-card">
+              <div class="agg-name" style="color: #fbbf24">AVG()</div>
+              <div class="agg-desc">数値カラムの平均を求めます。<br />NULL の行は除外して計算します。</div>
+            </div>
+            <div class="agg-card">
+              <div class="agg-name" style="color: #fb923c">MIN()</div>
+              <div class="agg-desc">最小値を返します。<br />数値・文字列・日付のどれにも使えます。</div>
+            </div>
+            <div class="agg-card">
+              <div class="agg-name" style="color: #f87171">MAX()</div>
+              <div class="agg-desc">最大値を返します。<br />最新の日付を探すときにも使えます。</div>
+            </div>
+            <div class="agg-card">
+              <div class="agg-name" style="color: #a78bfa">COUNT(DISTINCT)</div>
+              <div class="agg-desc">重複を除いた一意な値の数を数えます。</div>
+            </div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 掲示板全体の統計を一度に取得</div>
+            <pre><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">users</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_users</span>,    <span class="cmt">-- ユーザー総数</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">posts</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_posts</span>,    <span class="cmt">-- 投稿総数</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">total_comments</span>  <span class="cmt">-- コメント総数</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>    <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>;</pre>
+            <div class="run-result">→ `total_users: 20`, `total_posts: 100`, `total_comments: 200`（`seed.sql` 適用時の例）</div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 最初と最後に登録したユーザー</div>
+            <pre><span class="kw">SELECT</span>
+  <span class="fn">MIN</span>(<span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">first_joined</span>,
+  <span class="fn">MAX</span>(<span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">last_joined</span>,
+  <span class="fn">COUNT</span>(<span class="op">*</span>)        <span class="kw">AS</span> <span class="col">total</span>
+<span class="kw">FROM</span> <span class="tbl">users</span>;</pre>
+            <div class="run-result">→ 最初の登録日、最新の登録日、ユーザー総数を返す</div>
+          </div>
+
+          <div class="callout callout-warn">
+            <div class="callout-icon">⚠️</div>
+            <p>
+              <strong>`COUNT(*)` と `COUNT(カラム)` の違い</strong><br />
+              <code>COUNT(*)</code> は NULL を含む全行を数えます。<br />
+              <code>COUNT(カラム名)</code> は、そのカラムが NULL の行を除いて数えます。<br />
+              LEFT JOIN の結果で「一致した行だけ」を数えたいなら、必ず <code>COUNT(カラム名)</code> を使いましょう。
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ⑥ GROUP BY & HAVING
+    ══════════════════════════════════════ -->
+        <div class="section" id="s6">
+          <div class="section-header">
+            <div class="section-num">6</div>
+            <div>
+              <h2>GROUP BY &amp; HAVING</h2>
+              <div class="sub">グループごとの集計と絞り込み</div>
+            </div>
+          </div>
+
+          <p>
+            GROUP BY は、指定したカラムの値が同じ行を1つのグループにまとめます。そこへ集計関数を適用すると、
+            <span class="hl">グループごとの統計</span>が作れます。
+          </p>
+
+          <h3>GROUP BY の動き方</h3>
+          <div class="card" style="font-size: 13px; color: var(--text-muted)">
+            <div style="margin-bottom: 12px">`comments` テーブルを <code>user_id</code> で GROUP BY すると:</div>
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center">
+              <div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px">GROUP BY 前（一部）</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace">
+                  <tr style="background: var(--surface2); color: var(--text-dim)">
+                    <th style="padding: 5px 8px; border: 1px solid var(--border)">id</th>
+                    <th style="padding: 5px 8px; border: 1px solid var(--border)">user_id</th>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">1</td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(14, 165, 233, 0.08)">
+                      2
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">2</td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(34, 197, 94, 0.08)">
+                      3
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">3</td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(14, 165, 233, 0.08)">
+                      2
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">4</td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(168, 85, 247, 0.08)">
+                      4
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div style="font-size: 24px; color: var(--text-dim)">→</div>
+              <div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px">GROUP BY 後</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace">
+                  <tr style="background: var(--surface2); color: var(--text-dim)">
+                    <th style="padding: 5px 8px; border: 1px solid var(--border)">user_id</th>
+                    <th style="padding: 5px 8px; border: 1px solid var(--border)">COUNT(*)</th>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(14, 165, 233, 0.08)">
+                      2
+                    </td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">2</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(34, 197, 94, 0.08)">
+                      3
+                    </td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">1</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border); background: rgba(168, 85, 247, 0.08)">
+                      4
+                    </td>
+                    <td style="padding: 5px 8px; border: 1px solid var(--border)">1</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — ユーザーごとの投稿数（多い順）</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+            <div class="run-result">→ 各ユーザーの投稿数を返す。投稿がないユーザーは 0 として表示される</div>
+          </div>
+
+          <h3>WHERE と HAVING の比較</h3>
+          <table class="op-table">
+            <tr>
+              <th>項目</th>
+              <th>WHERE</th>
+              <th>HAVING</th>
+            </tr>
+            <tr>
+              <td>実行タイミング</td>
+              <td>GROUP BY 前（各行の絞り込み）</td>
+              <td>GROUP BY 後（グループの絞り込み）</td>
+            </tr>
+            <tr>
+              <td>使える条件</td>
+              <td>通常のカラム値</td>
+              <td>集計関数の結果</td>
+            </tr>
+            <tr>
+              <td>例</td>
+              <td><code>WHERE user_id = 1</code></td>
+              <td><code>HAVING COUNT(*) > 5</code></td>
+            </tr>
+          </table>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — WHERE + GROUP BY + HAVING を一緒に使う</div>
+            <pre><span class="cmt">-- 2024年2月以降に登録し、投稿を5件以上書いたユーザー</span>
+<span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="tbl">users</span>.<span class="col">created_at</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">users</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-02-01'</span>  <span class="cmt">-- 行フィルタ: 2月以降の登録者だけ</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">5</span>              <span class="cmt">-- グループフィルタ: 投稿5件以上</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+            <div class="run-result">→ 2024年2月以降に登録し、投稿が5件以上あるユーザー一覧を返す</div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ⑦ サブクエリ
+    ══════════════════════════════════════ -->
+        <div class="section" id="s7">
+          <div class="section-header">
+            <div class="section-num">7</div>
+            <div>
+              <h2>サブクエリ</h2>
+              <div class="sub">クエリの中にもう1つのクエリを書く — WHERE句・FROM句で活用</div>
+            </div>
+          </div>
+
+          <p>
+            サブクエリは、<span class="hl">クエリの中に入れ子で書かれる別のクエリ</span>です。結果を条件値として使ったり、仮のテーブルのように扱ったりできます。
+          </p>
+
+          <h3>WHERE 句のサブクエリ — 単一値・一覧を返す例</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — `alice` が書いた投稿のコメントをすべて取得</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">content</span>, <span class="col">post_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">post_id</span> <span class="kw">IN</span> (
+  <span class="kw">SELECT</span> <span class="col">id</span>           <span class="cmt">-- サブクエリ: alice の投稿 id 一覧</span>
+  <span class="kw">FROM</span>   <span class="tbl">posts</span>
+  <span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> (
+    <span class="kw">SELECT</span> <span class="col">id</span>         <span class="cmt">-- サブクエリ: alice の user id を取得</span>
+    <span class="kw">FROM</span>   <span class="tbl">users</span>
+    <span class="kw">WHERE</span>  <span class="col">username</span> <span class="op">=</span> <span class="str">'alice'</span>
+  )
+);</pre>
+            <div class="run-result">→ `alice` の投稿に付いたコメントをすべて返す</div>
+          </div>
+
+          <h3>WHERE 句のサブクエリ — 存在確認（EXISTS）</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 1回でもコメントしたユーザーだけを取得</div>
+            <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="kw">EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span>
+  <span class="kw">FROM</span>   <span class="tbl">comments</span>
+  <span class="kw">WHERE</span>  <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>   <span class="cmt">-- 外側の users.id を参照</span>
+);</pre>
+            <div class="run-result">→ コメントを1回以上書いたことのあるユーザー一覧を返す</div>
+          </div>
+
+          <h3>FROM 句のサブクエリ — インラインビュー</h3>
+          <p>
+            FROM 句に置いたサブクエリは、<span class="hl">一時テーブル</span>のように振る舞います。複雑な集計結果をさらに加工したいときに便利です。
+          </p>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — ユーザーごとの投稿数が平均以上の人だけを取得</div>
+            <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">post_count</span>
+<span class="kw">FROM</span> (
+  <span class="cmt">-- サブクエリでユーザーごとの投稿数を集計</span>
+  <span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+           <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+  <span class="kw">FROM</span>     <span class="tbl">users</span>
+  <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+  <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+) <span class="kw">AS</span> <span class="col">user_stats</span>                           <span class="cmt">-- インラインビューには別名が必須</span>
+<span class="kw">WHERE</span> <span class="col">post_count</span> <span class="op">></span> (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">post_count</span>)                 <span class="cmt">-- 投稿数の全体平均</span>
+  <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span>   <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+    <span class="kw">FROM</span>     <span class="tbl">users</span>
+    <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+    <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+  )
+)
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+            <div class="run-result">→ 平均（5件）以上の投稿を書いたユーザーと、その投稿数を返す</div>
+          </div>
+
+          <div class="callout callout-purple">
+            <div class="callout-icon">💡</div>
+            <p>
+              <strong>サブクエリが複雑になったら CTE（WITH句）で整理しましょう。</strong><br />
+              <code>WITH user_stats AS (SELECT ...)</code> のように名前を付けると、かなり読みやすくなります。詳しくは SELECT 演習ファイルで扱います。
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         ⑧ ORDER BY & LIMIT
+    ══════════════════════════════════════ -->
+        <div class="section" id="s8">
+          <div class="section-header">
+            <div class="section-num">8</div>
+            <div>
+              <h2>ORDER BY &amp; LIMIT</h2>
+              <div class="sub">並び替えとページネーション</div>
+            </div>
+          </div>
+
+          <p>ORDER BY は結果の並び替えに、LIMIT / OFFSET は結果の一部だけを取り出すときに使います。</p>
+
+          <h3>ORDER BY — 並び替え</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 複数カラムで並び替える</div>
+            <pre><span class="cmt">-- user_id は昇順、同じ user_id の中では created_at を降順</span>
+<span class="kw">SELECT</span>   <span class="col">user_id</span>, <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">user_id</span> <span class="kw">ASC</span>,
+         <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+            <div class="run-result">→ ユーザー id 順に並べ、同じユーザー内では新しい投稿を先に表示する</div>
+          </div>
+
+          <h3>LIMIT &amp; OFFSET — ページネーション</h3>
+          <div class="card">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px">
+              LIMIT n OFFSET m → m 行目から n 件を取得
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-family: monospace">
+              <div style="display: flex; gap: 12px; align-items: center">
+                <span style="color: var(--text-dim); width: 60px">1ページ</span>
+                <code>LIMIT 10 OFFSET 0</code>
+                <span style="color: var(--text-dim)">→ 1〜10行目</span>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center">
+                <span style="color: var(--text-dim); width: 60px">2ページ</span>
+                <code>LIMIT 10 OFFSET 10</code>
+                <span style="color: var(--text-dim)">→ 11〜20行目</span>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center">
+                <span style="color: var(--text-dim); width: 60px">nページ</span>
+                <code>LIMIT 10 OFFSET (n-1)*10</code>
+                <span style="color: var(--text-dim)">→ 一般式</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — 投稿一覧の2ページ目（1ページ10件）</div>
+            <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>
+<span class="kw">OFFSET</span>   <span class="num">10</span>;     <span class="cmt">-- 2ページ目: 11〜20件目の投稿</span></pre>
+            <div class="run-result">→ 新しい順で見たときの 11〜20 件目の投稿を返す（2ページ目）</div>
+          </div>
+
+          <div class="callout callout-warn">
+            <div class="callout-icon">⚠️</div>
+            <p>
+              <strong>OFFSET が大きいと遅くなります。</strong> たとえば <code>OFFSET 10000</code> は、先頭の 10,000 行を読んで捨てる形で動きます。データ量が多い場合は、最後に見た <code>id</code> を基準に
+              <code>WHERE id &lt; 最後のid</code> のように書くカーソル方式がよく使われます。
+            </p>
+          </div>
+
+          <h3>まとめ — 全体パターンを一目で見る</h3>
+          <div class="run-box">
+            <div class="run-header">▶ 実行例 — ここまで学んだ内容をまとめたクエリ</div>
+            <pre><span class="cmt">-- 2024年3月以降に作成された投稿のうち</span>
+<span class="cmt">-- コメントが2件以上あるものを、投稿 + 作成者 + コメント数つきで取得</span>
+<span class="cmt">-- コメント数の多い順で、最大5件</span>
+<span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>             <span class="kw">AS</span> <span class="col">author</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>)         <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>                              <span class="cmt">-- FROM</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-03-01'</span>  <span class="cmt">-- WHERE: 3月以降の投稿だけ</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>                           <span class="cmt">-- GROUP BY: 投稿ごと</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>           <span class="cmt">-- HAVING: コメント2件以上</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>               <span class="cmt">-- ORDER BY: 多い順</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;                                  <span class="cmt">-- LIMIT: 上位5件</span></pre>
+            <div class="run-result">→ 3月以降の投稿のうち、コメントが2件以上あるものをコメント数の多い順で5件返す</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const toggle = document.getElementById("themeToggle");
+      toggle.addEventListener("change", () => {
+        document.body.classList.toggle("light", toggle.checked);
+      });
+
+      const sections = document.querySelectorAll("[id]");
+      const navLinks = document.querySelectorAll(".sidebar nav a");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              navLinks.forEach((a) => a.classList.remove("active"));
+              const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-30% 0px -60% 0px" },
+      );
+      sections.forEach((s) => observer.observe(s));
+    </script>
+  </body>
+</html>
