@@ -1,0 +1,2528 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SELECT 演習 — 掲示板で学ぶ</title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #242736;
+        --border: #2e3148;
+        --primary: #0ea5e9;
+        --primary-light: #38bdf8;
+        --green: #22c55e;
+        --yellow: #fbbf24;
+        --red: #f43f5e;
+        --blue: #6366f1;
+        --orange: #f97316;
+        --cyan: #2dd4bf;
+        --purple: #a855f7;
+        --text: #f1f5f9;
+        --text-muted: #b0bbd0;
+        --text-dim: #7d8fa3;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Meiryo", "Noto Sans JP", sans-serif;
+        line-height: 1.7;
+      }
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* ── サイドバー ── */
+      .sidebar {
+        width: 256px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 28px 0 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 20px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .sidebar-back:hover {
+        color: var(--primary-light);
+      }
+      .sidebar-logo {
+        padding: 0 20px 24px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+      }
+      .sidebar-logo .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+      }
+      .sidebar-logo h2 {
+        font-size: 15px;
+        margin-top: 4px;
+      }
+      .sidebar nav a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .sidebar nav a:hover,
+      .sidebar nav a.active {
+        color: var(--text);
+        background: var(--surface2);
+        border-left-color: var(--primary);
+      }
+      .sidebar nav .sec {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 14px 20px 5px;
+        font-weight: 600;
+      }
+      .sidebar-progress {
+        padding: 12px 20px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+      .progress-bar {
+        height: 4px;
+        background: var(--surface2);
+        border-radius: 2px;
+        margin-top: 6px;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--green);
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
+
+      /* ── メイン ── */
+      .main {
+        margin-left: 256px;
+        max-width: 900px;
+        padding: 48px 48px 120px;
+      }
+
+      /* ── セクション ── */
+      .section {
+        margin-bottom: 72px;
+      }
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .level-badge {
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+      }
+      .lv1 {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      .lv2 {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+      }
+      .lv3 {
+        background: rgba(249, 115, 22, 0.15);
+        color: #fb923c;
+        border: 1px solid rgba(249, 115, 22, 0.3);
+      }
+      .lv4 {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+      }
+      .lv5 {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+      }
+      .section-header h2 {
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .section-header .sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+
+      /* ── ヒーロー ── */
+      .hero {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(14, 165, 233, 0.08));
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        border-radius: 12px;
+        padding: 32px 40px;
+        margin-bottom: 52px;
+      }
+      .hero .tag {
+        font-size: 11px;
+        color: var(--primary-light);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 600;
+      }
+      .hero h1 {
+        font-size: 30px;
+        font-weight: 800;
+        margin: 10px 0 10px;
+        background: linear-gradient(135deg, #fff 40%, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero p {
+        font-size: 14px;
+        max-width: 540px;
+        margin: 0;
+      }
+      .hero .chips {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 3px 11px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      /* ── 問題カード ── */
+      .q-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .q-header {
+        padding: 14px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .q-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--surface2);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+        border: 1px solid var(--border);
+      }
+      .q-num.solved {
+        background: rgba(34, 197, 94, 0.15);
+        color: var(--green);
+        border-color: rgba(34, 197, 94, 0.4);
+      }
+      .q-meta {
+        flex: 1;
+      }
+      .q-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+      .q-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .q-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .q-tag {
+        font-size: 11px;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-weight: 600;
+        background: var(--surface2);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+      .q-tag.kw {
+        background: rgba(14, 165, 233, 0.12);
+        color: var(--primary-light);
+        border-color: rgba(14, 165, 233, 0.3);
+      }
+
+      /* ── ヒント領域 ── */
+      .hint-section {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(251, 191, 36, 0.04);
+      }
+      .hint-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--yellow);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .hint-text {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      /* ── 期待結果 ── */
+      .expect-section {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(99, 102, 241, 0.04);
+      }
+      .expect-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #a5b4fc;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+      }
+      .expect-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        font-family: monospace;
+      }
+      .expect-table th {
+        background: var(--surface2);
+        padding: 6px 10px;
+        text-align: left;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        font-weight: 600;
+      }
+      .expect-table td {
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      .expect-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .expect-more {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 6px;
+        font-style: italic;
+      }
+
+      /* ── 解答トグル ── */
+      .answer-toggle {
+        width: 100%;
+        padding: 11px 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-align: left;
+        transition: all 0.15s;
+        border-top: 1px solid var(--border);
+      }
+      .answer-toggle:hover {
+        color: var(--primary-light);
+        background: rgba(14, 165, 233, 0.04);
+      }
+      .answer-toggle.open {
+        color: var(--primary-light);
+        background: rgba(14, 165, 233, 0.06);
+      }
+      .toggle-arrow {
+        margin-left: auto;
+        transition: transform 0.2s;
+        font-size: 11px;
+      }
+      .answer-toggle.open .toggle-arrow {
+        transform: rotate(180deg);
+      }
+
+      .answer-body {
+        display: none;
+      }
+      .answer-body.open {
+        display: block;
+      }
+
+      /* ── コードブロック ── */
+      .code-block {
+        background: #0d1117;
+        border-top: 1px solid var(--border);
+      }
+      .code-header {
+        background: var(--surface2);
+        padding: 7px 16px;
+        font-size: 12px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .code-block pre {
+        padding: 16px 20px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
+        font-size: 13px;
+        line-height: 1.75;
+        margin: 0;
+      }
+      .kw {
+        color: #c792ea;
+        font-weight: 600;
+      }
+      .fn {
+        color: #82aaff;
+      }
+      .str {
+        color: #4ade80;
+      }
+      .num {
+        color: #fb923c;
+      }
+      .cmt {
+        color: #64748b;
+        font-style: italic;
+      }
+      .tbl {
+        color: #22d3ee;
+      }
+      .col {
+        color: #facc15;
+      }
+      .op {
+        color: #f87171;
+      }
+
+      /* ── 解説 ── */
+      .answer-explain {
+        padding: 14px 18px;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.015);
+      }
+      .explain-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+      }
+      .explain-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .explain-item {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        font-size: 13px;
+      }
+      .explain-kw {
+        font-family: monospace;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 3px;
+        flex-shrink: 0;
+        margin-top: 2px;
+        background: var(--surface2);
+        color: var(--primary-light);
+        border: 1px solid var(--border);
+      }
+      .explain-text {
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ── コールアウト ── */
+      .callout {
+        border-radius: 8px;
+        padding: 11px 14px;
+        margin: 10px 0;
+        font-size: 13px;
+        display: flex;
+        gap: 10px;
+      }
+      .callout-tip {
+        background: rgba(74, 222, 128, 0.07);
+        border-left: 3px solid var(--green);
+      }
+      .callout-warn {
+        background: rgba(250, 204, 21, 0.07);
+        border-left: 3px solid var(--yellow);
+      }
+      .callout-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .callout p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+      .callout strong {
+        color: var(--text);
+      }
+
+      /* ── カード ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-bottom: 14px;
+      }
+
+      code {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: monospace;
+        font-size: 12.5px;
+        color: var(--cyan);
+      }
+
+      /* ── テーマ切替 ── */
+      .theme-switch-wrap {
+        margin-top: auto;
+        flex-shrink: 0;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .theme-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+      }
+      .theme-switch input {
+        display: none;
+      }
+      .theme-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .theme-slider::before {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: var(--primary);
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+      .theme-switch input:checked + .theme-slider {
+        background: #ddd8ff;
+        border-color: #a899f8;
+      }
+      .theme-switch input:checked + .theme-slider::before {
+        transform: translateX(22px);
+      }
+      .theme-icon {
+        font-size: 15px;
+        line-height: 1;
+        color: var(--text-muted);
+      }
+
+      /* ── ライトモード ── */
+      body.light {
+        --bg: #f0f2f7;
+        --surface: #ffffff;
+        --surface2: #e4e7f0;
+        --border: #cdd1de;
+        --text: #111827;
+        --text-muted: #374151;
+        --text-dim: #6b7280;
+        --primary: #0284c7;
+        --primary-light: #0369a1;
+        --green: #16a34a;
+        --yellow: #d97706;
+        --blue: #4f46e5;
+        --orange: #ea580c;
+        --cyan: #0d9488;
+      }
+      body.light .code-block {
+        background: #dde0eb;
+      }
+      body.light .code-block pre {
+        background: #dde0eb;
+        color: #111827;
+      }
+      body.light .kw {
+        color: #6d28d9;
+      }
+      body.light .fn {
+        color: #1d4ed8;
+      }
+      body.light .str {
+        color: #15803d;
+      }
+      body.light .num {
+        color: #c2410c;
+      }
+      body.light .cmt {
+        color: #6b7280;
+      }
+      body.light .tbl {
+        color: #0891b2;
+      }
+      body.light .col {
+        color: #b45309;
+      }
+      body.light .op {
+        color: #b91c1c;
+      }
+      body.light .hero h1 {
+        background: none;
+        -webkit-background-clip: unset;
+        -webkit-text-fill-color: #000;
+      }
+      body.light .answer-explain {
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          margin-left: 0;
+          padding: 24px 18px 80px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <!-- ── サイドバー ── -->
+      <aside class="sidebar">
+        <a href="../index_jp.html" class="sidebar-back">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          学習一覧へ戻る
+        </a>
+        <div class="sidebar-logo">
+          <div class="tag">講義資料</div>
+          <h2>SELECT 演習</h2>
+        </div>
+        <nav>
+          <div class="sec">Lv 1 · 基本の SELECT</div>
+          <a href="#lv1">Q1〜Q5 — 単一テーブル</a>
+          <div class="sec">Lv 2 · WHERE 条件</div>
+          <a href="#lv2">Q6〜Q10 — 絞り込み</a>
+          <div class="sec">Lv 3 · JOIN</div>
+          <a href="#lv3">Q11〜Q15 — テーブル結合</a>
+          <div class="sec">Lv 4 · 集計</div>
+          <a href="#lv4">Q16〜Q20 — GROUP BY</a>
+          <div class="sec">Lv 5 · 応用</div>
+          <a href="#lv5">Q21〜Q25 — サブクエリ・複合</a>
+        </nav>
+        <div class="sidebar-progress">
+          <div id="progress-text">0 / 25 完了</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+        </div>
+        <div class="theme-switch-wrap">
+          <span class="theme-icon">🌙</span>
+          <label class="theme-switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="theme-slider"></span>
+          </label>
+          <span class="theme-icon">☀️</span>
+        </div>
+      </aside>
+
+      <!-- ── メイン ── -->
+      <main class="main">
+        <div class="hero">
+          <div class="tag">SQL Practice</div>
+          <h1>SELECT 演習 25問</h1>
+          <p>
+            掲示板 DB（<code>board.db</code>）を使って、段階的に解いていく演習です。<code>sqlite3 board.db</code> を開いて、
+            実際にクエリを入力してみましょう。解いたあとに <strong>答えを見る</strong> で確認できます。
+          </p>
+          <div class="chips">
+            <span class="chip">Lv1 基礎</span>
+            <span class="chip">Lv2 WHERE</span>
+            <span class="chip">Lv3 JOIN</span>
+            <span class="chip">Lv4 集計</span>
+            <span class="chip">Lv5 応用</span>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 36px">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px">⚡ はじめる前の準備</div>
+          <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 5px">
+            <div>① `seed.sql` を適用してダミーデータを入れます: <code>sqlite3 board.db &lt; seed.sql</code></div>
+            <div>② SQLite シェルを開きます: <code>sqlite3 board.db</code></div>
+            <div>③ クエリを実際に入力して実行し、答えと見比べてみましょう。</div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         Lv 1 — 基本の SELECT
+    ══════════════════════════════════════ -->
+        <div class="section" id="lv1">
+          <div class="section-header">
+            <span class="level-badge lv1">Lv 1</span>
+            <div>
+              <h2>基本の SELECT — 単一テーブル</h2>
+              <div class="sub">FROM · SELECT · ORDER BY · LIMIT</div>
+            </div>
+          </div>
+
+          <!-- Q1 -->
+          <div class="q-card" id="q1">
+            <div class="q-header">
+              <div class="q-num">1</div>
+              <div class="q-meta">
+                <div class="q-title">ユーザー一覧を取得する</div>
+                <div class="q-desc">
+                  `users` テーブルから <strong>`id`, `username`, `created_at`</strong> の3カラムを取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">SELECT</span><span class="q-tag kw">FROM</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>username</th>
+                  <th>created_at</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>alice</td>
+                  <td>2024-01-05 09:00:00</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>bob</td>
+                  <td>2024-01-08 10:30:00</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>carol</td>
+                  <td>2024-01-10 11:00:00</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全20行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">username</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">SELECT</span
+                    ><span class="explain-text"
+                      >取得したい3カラムをカンマ区切りで並べます。<code>SELECT *</code> で全部取ることもできますが、
+                      `password` カラムまで一緒に返ってきます。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">FROM</span
+                    ><span class="explain-text"
+                      >データを取得するテーブルを指定します。WHERE がないので全行が返ります。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="q-card" id="q2">
+            <div class="q-header">
+              <div class="q-num">2</div>
+              <div class="q-meta">
+                <div class="q-title">新しい投稿を10件取得する</div>
+                <div class="q-desc">
+                  `posts` テーブルから <strong>`id`, `title`, `created_at`</strong> を新しい順に10件だけ取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">ORDER BY</span><span class="q-tag kw">LIMIT</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>created_at</th>
+                </tr>
+                <tr>
+                  <td>100</td>
+                  <td>SQLベストプラクティス</td>
+                  <td>2024-05-11 10:40:00</td>
+                </tr>
+                <tr>
+                  <td>99</td>
+                  <td>データ要約ダッシュボードクエリ</td>
+                  <td>2024-05-10 13:20:00</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全10行（新しい順）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">ORDER BY … DESC</span
+                    ><span class="explain-text"
+                      >`created_at` を基準に降順で並べています。新しいものが上に来ます。<code>ASC</code>（既定値）は昇順です。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">LIMIT 10</span
+                    ><span class="explain-text">全100件のうち、上位10件だけを返します。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="q-card" id="q3">
+            <div class="q-header">
+              <div class="q-num">3</div>
+              <div class="q-meta">
+                <div class="q-title">コメントを古い順に見る</div>
+                <div class="q-desc">
+                  `comments` テーブルから <strong>`id`, `content`, `created_at`</strong> を古い順（昇順）で5件だけ取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">ORDER BY ASC</span><span class="q-tag kw">LIMIT</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>content</th>
+                  <th>created_at</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>本当にためになる記事ですね！</td>
+                  <td>2024-01-06 10:00:00</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>ありがとうございます、勉強になりました。</td>
+                  <td>2024-01-06 11:00:00</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全5行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">content</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>     <span class="tbl">comments</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">ASC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">ORDER BY … ASC</span
+                    ><span class="explain-text"
+                      >昇順（ASC）は既定値なので省略もできますが、明示すると意図が伝わりやすくなります。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="q-card" id="q4">
+            <div class="q-header">
+              <div class="q-num">4</div>
+              <div class="q-meta">
+                <div class="q-title">投稿一覧の3ページ目を見る</div>
+                <div class="q-desc">
+                  新しい順に並べたときの <strong>3ページ目（1ページ10件）</strong> に当たる投稿の `id` と `title` を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">LIMIT</span><span class="q-tag kw">OFFSET</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                </tr>
+                <tr>
+                  <td>80</td>
+                  <td>CUBEで多次元集計</td>
+                </tr>
+                <tr>
+                  <td>79</td>
+                  <td>ROLLUPで小計を出す</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全10行（21〜30件目）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>
+<span class="kw">OFFSET</span>   <span class="num">20</span>;   <span class="cmt">-- (3-1) × 10 = 20</span></pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">OFFSET</span
+                    ><span class="explain-text"
+                      >n ページ目の OFFSET は `(n-1) × ページサイズ` です。3ページ目なら `(3-1)×10 = 20`。先頭20件を飛ばして次の10件を取ります。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="q-card" id="q5">
+            <div class="q-header">
+              <div class="q-num">5</div>
+              <div class="q-meta">
+                <div class="q-title">ユーザーIDを重複なしで取得する</div>
+                <div class="q-desc">
+                  `comments` テーブルから、コメントを書いたことのある <strong>`user_id` の一覧</strong>を重複なしで取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">DISTINCT</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>user_id</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 重複なしで全20行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT DISTINCT</span> <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">ORDER BY</span> <span class="col">user_id</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">DISTINCT</span
+                    ><span class="explain-text"
+                      >SELECT の直後に付けて重複行を除きます。200件のコメントから、20人分の一意な `user_id` だけを返します。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         Lv 2 — WHERE 条件
+    ══════════════════════════════════════ -->
+        <div class="section" id="lv2">
+          <div class="section-header">
+            <span class="level-badge lv2">Lv 2</span>
+            <div>
+              <h2>WHERE 条件 — 絞り込み</h2>
+              <div class="sub">比較・論理・LIKE・BETWEEN・IN</div>
+            </div>
+          </div>
+
+          <!-- Q6 -->
+          <div class="q-card" id="q6">
+            <div class="q-header">
+              <div class="q-num">6</div>
+              <div class="q-meta">
+                <div class="q-title">特定ユーザーの投稿</div>
+                <div class="q-desc">
+                  <strong>user_id が 3</strong> のユーザー（carol）が書いた投稿の id, title, created_at を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">WHERE =</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>created_at</th>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>インデックスとは何か</td>
+                  <td>2024-01-11 11:30:00</td>
+                </tr>
+                <tr>
+                  <td>23</td>
+                  <td>実行計画 EXPLAIN</td>
+                  <td>2024-02-24 11:00:00</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全5行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">created_at</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="op">=</span> <span class="num">3</span>
+<span class="kw">ORDER BY</span> <span class="col">created_at</span>;</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q7 -->
+          <div class="q-card" id="q7">
+            <div class="q-header">
+              <div class="q-num">7</div>
+              <div class="q-meta">
+                <div class="q-title">タイトルに「JOIN」を含む投稿</div>
+                <div class="q-desc">タイトルに <strong>「JOIN」が含まれる</strong> 投稿の id と title を取得してください。</div>
+                <div class="q-tags"><span class="q-tag kw">LIKE</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>JOIN 完全攻略</td>
+                </tr>
+                <tr>
+                  <td>36</td>
+                  <td>自己結合（Self Join）</td>
+                </tr>
+                <tr>
+                  <td>37</td>
+                  <td>CROSS JOIN の注意点</td>
+                </tr>
+                <tr>
+                  <td>38</td>
+                  <td>NATURAL JOIN を理解する</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%JOIN%'</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">%JOIN%</span
+                    ><span class="explain-text"
+                      >前後の <code>%</code> は「任意の文字が 0 文字以上続く」ことを表します。「JOIN」が先頭・途中・末尾の
+                      どこにあっても一致します。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q8 -->
+          <div class="q-card" id="q8">
+            <div class="q-header">
+              <div class="q-num">8</div>
+              <div class="q-meta">
+                <div class="q-title">2024年3月に作成された投稿</div>
+                <div class="q-desc">created_at が <strong>2024年3月の1か月間</strong> に入る投稿数を取得してください。</div>
+                <div class="q-tags"><span class="q-tag kw">BETWEEN</span><span class="q-tag kw">COUNT</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>march_posts</th>
+                </tr>
+                <tr>
+                  <td>20</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="col">march_posts</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="kw">BETWEEN</span> <span class="str">'2024-03-01'</span> <span class="kw">AND</span> <span class="str">'2024-03-31 23:59:59'</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">BETWEEN</span
+                    ><span class="explain-text"
+                      >日付も文字列として比較されます。終了日に時刻を付けないと 3月31日 00:00:00 までしか含まれないため、
+                      <code>23:59:59</code> を付けています。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q9 -->
+          <div class="q-card" id="q9">
+            <div class="q-header">
+              <div class="q-num">9</div>
+              <div class="q-meta">
+                <div class="q-title">複数ユーザーのコメントをまとめて取得</div>
+                <div class="q-desc">
+                  user_id が <strong>1、5、10</strong> のユーザーが書いたコメントの id, content, user_id を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">IN</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>content</th>
+                  <th>user_id</th>
+                </tr>
+                <tr>
+                  <td>9</td>
+                  <td>サブクエリの活用、とても参考になりました。</td>
+                  <td>9</td>
+                </tr>
+                <tr>
+                  <td>21</td>
+                  <td>NULL の並び順ってこうなるんですね。</td>
+                  <td>1</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全30行（各ユーザー10件ずつ）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">content</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">comments</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">IN</span> (<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>)
+<span class="kw">ORDER BY</span> <span class="col">user_id</span>, <span class="col">id</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">IN (1,5,10)</span
+                    ><span class="explain-text"
+                      ><code>WHERE user_id=1 OR user_id=5 OR user_id=10</code> と同じ意味ですが、ずっと簡潔に書けます。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q10 -->
+          <div class="q-card" id="q10">
+            <div class="q-header">
+              <div class="q-num">10</div>
+              <div class="q-meta">
+                <div class="q-title">AND + LIKE の組み合わせ</div>
+                <div class="q-desc">
+                  user_id が <strong>1〜10</strong> で、タイトルに <strong>「実践」が含まれる</strong> 投稿を取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">AND</span><span class="q-tag kw">LIKE</span
+                  ><span class="q-tag kw">BETWEEN</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>user_id</th>
+                </tr>
+                <tr>
+                  <td>81</td>
+                  <td>実践クエリ：掲示板の統計</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>82</td>
+                  <td>実践クエリ：ユーザーランキング</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>83</td>
+                  <td>実践クエリ：月別推移</td>
+                  <td>3</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全10行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">id</span>, <span class="col">title</span>, <span class="col">user_id</span>
+<span class="kw">FROM</span>   <span class="tbl">posts</span>
+<span class="kw">WHERE</span>  <span class="col">user_id</span> <span class="kw">BETWEEN</span> <span class="num">1</span> <span class="kw">AND</span> <span class="num">10</span>
+  <span class="kw">AND</span>  <span class="col">title</span> <span class="kw">LIKE</span> <span class="str">'%実践%'</span>
+<span class="kw">ORDER BY</span> <span class="col">id</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">AND</span
+                    ><span class="explain-text"
+                      >2つの条件をどちらも満たす行だけを絞り込みます。BETWEEN と LIKE を AND でつないでいます。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         Lv 3 — JOIN
+    ══════════════════════════════════════ -->
+        <div class="section" id="lv3">
+          <div class="section-header">
+            <span class="level-badge lv3">Lv 3</span>
+            <div>
+              <h2>JOIN — テーブル結合</h2>
+              <div class="sub">INNER JOIN · LEFT JOIN · 複数 JOIN</div>
+            </div>
+          </div>
+
+          <!-- Q11 -->
+          <div class="q-card" id="q11">
+            <div class="q-header">
+              <div class="q-num">11</div>
+              <div class="q-meta">
+                <div class="q-title">投稿 + 投稿者名</div>
+                <div class="q-desc">
+                  投稿の <strong>id, title</strong> と投稿者の <strong>username</strong> を一緒に取得してください。（新しい順で
+                  10件）
+                </div>
+                <div class="q-tags"><span class="q-tag kw">JOIN</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>username</th>
+                </tr>
+                <tr>
+                  <td>100</td>
+                  <td>SQLベストプラクティス</td>
+                  <td>tina</td>
+                </tr>
+                <tr>
+                  <td>99</td>
+                  <td>データ要約ダッシュボードクエリ</td>
+                  <td>steve</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">JOIN … ON</span
+                    ><span class="explain-text"
+                      >posts.user_id と users.id が同じ行どうしを結び付けます。INNER JOIN なので、投稿者がいない投稿は
+                      結果に含まれません（seed データでは該当なし）。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">テーブル.カラム</span
+                    ><span class="explain-text"
+                      >両方のテーブルに id カラムがあるため、<code>posts.id</code> のように出どころを明確にします。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q12 -->
+          <div class="q-card" id="q12">
+            <div class="q-header">
+              <div class="q-num">12</div>
+              <div class="q-meta">
+                <div class="q-title">コメント + 投稿タイトル + コメント投稿者</div>
+                <div class="q-desc">
+                  コメントの <strong>id, content</strong> と、その投稿の <strong>title</strong>、コメント投稿者の
+                  <strong>username</strong> を一緒に取得してください。（5件）
+                </div>
+                <div class="q-tags"><span class="q-tag kw">JOIN × 2</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>content</th>
+                  <th>title</th>
+                  <th>username</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>本当にためになる記事ですね！</td>
+                  <td>SQLite 入門</td>
+                  <td>bob</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">id</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">5</span>;</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q13 -->
+          <div class="q-card" id="q13">
+            <div class="q-header">
+              <div class="q-num">13</div>
+              <div class="q-meta">
+                <div class="q-title">alice の投稿についたコメント</div>
+                <div class="q-desc">
+                  <strong>alice</strong> が書いた投稿についたコメントの content と投稿 title を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">WHERE</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>content</th>
+                  <th>title</th>
+                </tr>
+                <tr>
+                  <td>本当にためになる記事ですね！</td>
+                  <td>SQLite 入門</td>
+                </tr>
+                <tr>
+                  <td>ありがとうございます、勉強になりました。</td>
+                  <td>SQLite 入門</td>
+                </tr>
+              </table>
+              <div class="expect-more">… alice の投稿 5件 × 各2コメント = 全10行</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>  <span class="tbl">comments</span>.<span class="col">content</span>,
+        <span class="tbl">posts</span>.<span class="col">title</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>   <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>   <span class="tbl">users</span>.<span class="col">username</span> <span class="op">=</span> <span class="str">'alice'</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">id</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">2回目の JOIN</span
+                    ><span class="explain-text"
+                      >2回目の JOIN では posts の user_id で users を結びます。「投稿者が alice である投稿」を
+                      WHERE で絞り込むためです。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q14 -->
+          <div class="q-card" id="q14">
+            <div class="q-header">
+              <div class="q-num">14</div>
+              <div class="q-meta">
+                <div class="q-title">投稿一覧 + コメント数（LEFT JOIN）</div>
+                <div class="q-desc">
+                  投稿の <strong>id, title</strong> とコメント数（<strong>comment_count</strong>）を一緒に取得してください。
+                  コメントがない投稿も含めます。（コメント数が多い順で上位10件）
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">LEFT JOIN</span><span class="q-tag kw">COUNT</span
+                  ><span class="q-tag kw">GROUP BY</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>comment_count</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>SQLite 入門</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>JOIN 完全攻略</td>
+                  <td>2</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">10</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">LEFT JOIN</span
+                    ><span class="explain-text"
+                      >コメントがない投稿も結果に含まれます。INNER JOIN を使うと、コメントがない投稿は消えてしまいます。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">COUNT(comments.id)</span
+                    ><span class="explain-text"
+                      >コメントがない場合、LEFT JOIN 後の comments.id は NULL になります。COUNT は NULL を数えないため、
+                      0 が返ります。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q15 -->
+          <div class="q-card" id="q15">
+            <div class="q-header">
+              <div class="q-num">15</div>
+              <div class="q-meta">
+                <div class="q-title">サービスクエリ再現 — 投稿一覧 API</div>
+                <div class="q-desc">
+                  サービスの <strong>GET /api/posts</strong> が実行するクエリを、そのまま書いてください。（id, title,
+                  created_at, username, comment_count を新しい順で）
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">GROUP BY</span
+                  ><span class="q-tag kw">ORDER BY</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>id</th>
+                  <th>title</th>
+                  <th>username</th>
+                  <th>comment_count</th>
+                </tr>
+                <tr>
+                  <td>100</td>
+                  <td>SQLベストプラクティス</td>
+                  <td>tina</td>
+                  <td>2</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答（サービスクエリそのまま）
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">id</span>,
+         <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">posts</span>.<span class="col">created_at</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>     <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="kw">DESC</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">INNER JOIN users</span
+                    ><span class="explain-text">投稿者名を取得するための INNER JOIN です。投稿者は必ず存在します。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">LEFT JOIN comments</span
+                    ><span class="explain-text">コメントがない投稿も一覧に含める必要があるため、LEFT JOIN を使います。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">GROUP BY posts.id</span
+                    ><span class="explain-text">LEFT JOIN で増えた行を投稿単位でまとめ、COUNT を集計します。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         Lv 4 — 集計
+    ══════════════════════════════════════ -->
+        <div class="section" id="lv4">
+          <div class="section-header">
+            <span class="level-badge lv4">Lv 4</span>
+            <div>
+              <h2>集計 — GROUP BY & HAVING</h2>
+              <div class="sub">COUNT · GROUP BY · HAVING</div>
+            </div>
+          </div>
+
+          <!-- Q16 -->
+          <div class="q-card" id="q16">
+            <div class="q-header">
+              <div class="q-num">16</div>
+              <div class="q-meta">
+                <div class="q-title">ユーザーごとの投稿数</div>
+                <div class="q-desc">
+                  各ユーザーの <strong>username</strong> と、書いた <strong>投稿数（post_count）</strong> を投稿数の多い順に取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">JOIN</span><span class="q-tag kw">GROUP BY</span
+                  ><span class="q-tag kw">COUNT</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                  <th>post_count</th>
+                </tr>
+                <tr>
+                  <td>alice</td>
+                  <td>5</td>
+                </tr>
+                <tr>
+                  <td>bob</td>
+                  <td>5</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全20行、全員5件ずつ</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q17 -->
+          <div class="q-card" id="q17">
+            <div class="q-header">
+              <div class="q-num">17</div>
+              <div class="q-meta">
+                <div class="q-title">ユーザーごとのコメント数 — 10件以上のみ</div>
+                <div class="q-desc">
+                  コメントを <strong>10件以上</strong> 書いたユーザーの username とコメント数を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">HAVING</span><span class="q-tag kw">COUNT</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                  <th>comment_count</th>
+                </tr>
+                <tr>
+                  <td>alice</td>
+                  <td>10</td>
+                </tr>
+                <tr>
+                  <td>bob</td>
+                  <td>10</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全20行（全員10件ずつ）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">users</span>
+<span class="kw">JOIN</span>     <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">10</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">HAVING</span
+                    ><span class="explain-text"
+                      >GROUP BY のあとにできた集計結果へ条件をかけます。<code>WHERE COUNT(...) >= 10</code> はエラーになるため、
+                      集計結果は必ず HAVING で絞り込みます。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q18 -->
+          <div class="q-card" id="q18">
+            <div class="q-header">
+              <div class="q-num">18</div>
+              <div class="q-meta">
+                <div class="q-title">月別の投稿数</div>
+                <div class="q-desc"><strong>月別（YYYY-MM）</strong> の投稿数を新しい月から順に取得してください。</div>
+                <div class="q-tags"><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">STRFTIME</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>month</th>
+                  <th>post_count</th>
+                </tr>
+                <tr>
+                  <td>2024-05</td>
+                  <td>11</td>
+                </tr>
+                <tr>
+                  <td>2024-04</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>2024-03</td>
+                  <td>20</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 全5か月分</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="fn">STRFTIME</span>(<span class="str">'%Y-%m'</span>, <span class="col">created_at</span>) <span class="kw">AS</span> <span class="col">month</span>,
+         <span class="fn">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">GROUP BY</span> <span class="fn">STRFTIME</span>(<span class="str">'%Y-%m'</span>, <span class="col">created_at</span>)
+<span class="kw">ORDER BY</span> <span class="col">month</span> <span class="kw">DESC</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">STRFTIME</span
+                    ><span class="explain-text"
+                      >SQLite の日付フォーマット関数です。<code>'%Y-%m'</code> で日付を「2024-03」の形に変換し、
+                      月単位でグループ化します。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q19 -->
+          <div class="q-card" id="q19">
+            <div class="q-header">
+              <div class="q-num">19</div>
+              <div class="q-meta">
+                <div class="q-title">掲示板全体の統計を1行で</div>
+                <div class="q-desc">
+                  1つのクエリで <strong>総ユーザー数・総投稿数・総コメント数</strong> を1行で取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">COUNT(DISTINCT)</span><span class="q-tag kw">JOIN</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>total_users</th>
+                  <th>total_posts</th>
+                  <th>total_comments</th>
+                </tr>
+                <tr>
+                  <td>20</td>
+                  <td>100</td>
+                  <td>200</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">users</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_users</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">posts</span>.<span class="col">id</span>)    <span class="kw">AS</span> <span class="col">total_posts</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">comments</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">total_comments</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>    <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">COUNT(DISTINCT)</span
+                    ><span class="explain-text"
+                      >LEFT JOIN によって行が掛け算のように増えるため、単純な COUNT では正確に数えられません。DISTINCT を使って
+                      各テーブルの固有 id だけを数えます。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q20 -->
+          <div class="q-card" id="q20">
+            <div class="q-header">
+              <div class="q-num">20</div>
+              <div class="q-meta">
+                <div class="q-title">最も早く／遅く登録したユーザー</div>
+                <div class="q-desc">
+                  <strong>最初に登録したユーザー</strong> と <strong>最後に登録したユーザー</strong> の username と登録日時を
+                  1つのクエリで取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">MIN</span><span class="q-tag kw">MAX</span
+                  ><span class="q-tag kw">サブクエリ</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                  <th>created_at</th>
+                  <th>type</th>
+                </tr>
+                <tr>
+                  <td>alice</td>
+                  <td>2024-01-05 09:00:00</td>
+                  <td>first</td>
+                </tr>
+                <tr>
+                  <td>tina</td>
+                  <td>2024-02-20 10:00:00</td>
+                  <td>last</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">created_at</span>, <span class="str">'first'</span> <span class="kw">AS</span> <span class="col">type</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="op">=</span> (<span class="kw">SELECT</span> <span class="fn">MIN</span>(<span class="col">created_at</span>) <span class="kw">FROM</span> <span class="tbl">users</span>)
+
+<span class="kw">UNION ALL</span>
+
+<span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">created_at</span>, <span class="str">'last'</span> <span class="kw">AS</span> <span class="col">type</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="col">created_at</span> <span class="op">=</span> (<span class="kw">SELECT</span> <span class="fn">MAX</span>(<span class="col">created_at</span>) <span class="kw">FROM</span> <span class="tbl">users</span>);</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">サブクエリ</span
+                    ><span class="explain-text">WHERE 句のサブクエリで MIN/MAX の日時を求め、比較しています。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">UNION ALL</span
+                    ><span class="explain-text"
+                      >2つの SELECT 結果を縦に連結します。UNION は重複を除きますが、UNION ALL はそのまま連結します。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════
+         Lv 5 — 応用
+    ══════════════════════════════════════ -->
+        <div class="section" id="lv5">
+          <div class="section-header">
+            <span class="level-badge lv5">Lv 5</span>
+            <div>
+              <h2>応用 — サブクエリ &amp; 複合クエリ</h2>
+              <div class="sub">サブクエリ · EXISTS · インラインビュー · 複合分析</div>
+            </div>
+          </div>
+
+          <!-- Q21 -->
+          <div class="q-card" id="q21">
+            <div class="q-header">
+              <div class="q-num">21</div>
+              <div class="q-meta">
+                <div class="q-title">一度もコメントを書いていないユーザー</div>
+                <div class="q-desc">コメントを <strong>一度も書いていない</strong> ユーザーの username を取得してください。</div>
+                <div class="q-tags"><span class="q-tag kw">NOT EXISTS</span><span class="q-tag kw">サブクエリ</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                </tr>
+                <tr>
+                  <td colspan="1" style="color: var(--text-dim); font-style: italic">
+                    seed データでは 0 行（全ユーザーがコメントを書いているため）
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">username</span>
+<span class="kw">FROM</span>   <span class="tbl">users</span>
+<span class="kw">WHERE</span>  <span class="kw">NOT EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span>
+  <span class="kw">FROM</span>   <span class="tbl">comments</span>
+  <span class="kw">WHERE</span>  <span class="tbl">comments</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+);</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">NOT EXISTS</span
+                    ><span class="explain-text"
+                      >サブクエリが1行も返さないときに真になります。そのユーザーのコメントがまったくなければ、外側の
+                      クエリ結果に含まれます。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">SELECT 1</span
+                    ><span class="explain-text"
+                      >EXISTS / NOT EXISTS は値ではなく行の有無だけを見るため、SELECT 1 のような軽い書き方を使います。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q22 -->
+          <div class="q-card" id="q22">
+            <div class="q-header">
+              <div class="q-num">22</div>
+              <div class="q-meta">
+                <div class="q-title">平均より多く投稿したユーザー</div>
+                <div class="q-desc">
+                  全ユーザーの平均投稿数より <strong>多く投稿したユーザー</strong> の username と投稿数を取得してください。
+                </div>
+                <div class="q-tags"><span class="q-tag kw">FROM句サブクエリ</span><span class="q-tag kw">AVG</span></div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                  <th>post_count</th>
+                </tr>
+                <tr>
+                  <td colspan="2" style="color: var(--text-dim); font-style: italic">
+                    seed データでは全員 5 件で平均（5）と同じため 0 行 / `>` を `>=` に変えると全20行
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span> <span class="col">username</span>, <span class="col">post_count</span>
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span>   <span class="tbl">users</span>.<span class="col">username</span>,
+           <span class="fn">COUNT</span>(<span class="tbl">posts</span>.<span class="col">id</span>) <span class="kw">AS</span> <span class="col">post_count</span>
+  <span class="kw">FROM</span>     <span class="tbl">users</span>
+  <span class="kw">LEFT JOIN</span> <span class="tbl">posts</span> <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+  <span class="kw">GROUP BY</span> <span class="tbl">users</span>.<span class="col">id</span>
+) <span class="kw">AS</span> <span class="col">stats</span>
+<span class="kw">WHERE</span> <span class="col">post_count</span> <span class="op">></span> (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">cnt</span>)
+  <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span>   <span class="fn">COUNT</span>(<span class="col">id</span>) <span class="kw">AS</span> <span class="col">cnt</span>
+    <span class="kw">FROM</span>     <span class="tbl">posts</span>
+    <span class="kw">GROUP BY</span> <span class="col">user_id</span>
+  )
+)
+<span class="kw">ORDER BY</span> <span class="col">post_count</span> <span class="kw">DESC</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">FROM句サブクエリ</span
+                    ><span class="explain-text"
+                      >先にユーザーごとの投稿数を求め（インラインビュー `stats`）、その結果をさらに WHERE で絞り込みます。
+                      GROUP BY の結果は直接 WHERE で絞れないため、この形を使います。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q23 -->
+          <div class="q-card" id="q23">
+            <div class="q-header">
+              <div class="q-num">23</div>
+              <div class="q-meta">
+                <div class="q-title">各投稿の最初のコメント投稿者</div>
+                <div class="q-desc">
+                  各投稿について、<strong>最初についたコメント</strong> の内容・投稿者 username・投稿 title を
+                  取得してください。（投稿 id 順で10件）
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">サブクエリ</span><span class="q-tag kw">MIN</span
+                  ><span class="q-tag kw">JOIN</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>post_title</th>
+                  <th>first_comment</th>
+                  <th>username</th>
+                </tr>
+                <tr>
+                  <td>SQLite 入門</td>
+                  <td>本当にためになる記事ですね！</td>
+                  <td>bob</td>
+                </tr>
+                <tr>
+                  <td>JOIN 完全攻略</td>
+                  <td>JOIN、本当にややこしかったけど…</td>
+                  <td>alice</td>
+                </tr>
+              </table>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>  <span class="tbl">posts</span>.<span class="col">title</span>    <span class="kw">AS</span> <span class="col">post_title</span>,
+        <span class="tbl">comments</span>.<span class="col">content</span> <span class="kw">AS</span> <span class="col">first_comment</span>,
+        <span class="tbl">users</span>.<span class="col">username</span>
+<span class="kw">FROM</span>    <span class="tbl">comments</span>
+<span class="kw">JOIN</span>    <span class="tbl">posts</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span>  <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">JOIN</span>    <span class="tbl">users</span>  <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>   <span class="tbl">comments</span>.<span class="col">id</span> <span class="op">=</span> (
+  <span class="kw">SELECT</span> <span class="fn">MIN</span>(<span class="col">id</span>)
+  <span class="kw">FROM</span>   <span class="tbl">comments</span> <span class="col">c2</span>
+  <span class="kw">WHERE</span>  <span class="col">c2</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">comments</span>.<span class="col">post_id</span>
+)
+<span class="kw">ORDER BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">LIMIT</span>   <span class="num">10</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">相関サブクエリ</span
+                    ><span class="explain-text"
+                      >外側のクエリにある <code>comments.post_id</code> をサブクエリ側から参照しています。各投稿ごとに
+                      サブクエリが実行され、その投稿で最小の MIN(id) を持つコメントを見つけます。</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q24 -->
+          <div class="q-card" id="q24">
+            <div class="q-header">
+              <div class="q-num">24</div>
+              <div class="q-meta">
+                <div class="q-title">ユーザー活動の総合ランキング</div>
+                <div class="q-desc">
+                  各ユーザーの <strong>投稿数 × 2 + コメント数</strong> を活動スコアとして計算し、上位5人を取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">FROM句サブクエリ</span><span class="q-tag kw">算術演算</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>username</th>
+                  <th>post_count</th>
+                  <th>comment_count</th>
+                  <th>score</th>
+                </tr>
+                <tr>
+                  <td>alice</td>
+                  <td>5</td>
+                  <td>10</td>
+                  <td>20</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 上位5人（同点ならアルファベット順）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>
+  <span class="tbl">u</span>.<span class="col">username</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">p</span>.<span class="col">id</span>)                       <span class="kw">AS</span> <span class="col">post_count</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">c</span>.<span class="col">id</span>)                       <span class="kw">AS</span> <span class="col">comment_count</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">p</span>.<span class="col">id</span>) <span class="op">*</span> <span class="num">2</span>
+    <span class="op">+</span> <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="tbl">c</span>.<span class="col">id</span>)                    <span class="kw">AS</span> <span class="col">score</span>
+<span class="kw">FROM</span>      <span class="tbl">users</span>    <span class="col">u</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">posts</span>    <span class="col">p</span> <span class="kw">ON</span> <span class="col">p</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="col">c</span> <span class="kw">ON</span> <span class="col">c</span>.<span class="col">user_id</span> <span class="op">=</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">GROUP BY</span> <span class="col">u</span>.<span class="col">id</span>
+<span class="kw">ORDER BY</span> <span class="col">score</span> <span class="kw">DESC</span>, <span class="col">u</span>.<span class="col">username</span> <span class="kw">ASC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">テーブル別名（u, p, c）</span
+                    ><span class="explain-text">長いテーブル名を短い別名にして、読みやすさを高めています。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">算術演算</span
+                    ><span class="explain-text"
+                      >SELECT 句では、集計関数の結果にそのまま <code>* 2 + ...</code> のような演算を適用できます。</span
+                    >
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">複数条件の ORDER BY</span
+                    ><span class="explain-text">スコアが同じ場合は username をアルファベット順で並べます。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q25 -->
+          <div class="q-card" id="q25">
+            <div class="q-header">
+              <div class="q-num">25</div>
+              <div class="q-meta">
+                <div class="q-title">最終ボス — 人気投稿の総合分析</div>
+                <div class="q-desc">
+                  2024年3月以降に作成された投稿のうち、コメントが2件以上ある投稿の <strong>title・投稿者・コメント数</strong> を
+                  コメント数の多い順で上位5件取得してください。
+                </div>
+                <div class="q-tags">
+                  <span class="q-tag kw">JOIN × 2</span><span class="q-tag kw">WHERE</span
+                  ><span class="q-tag kw">GROUP BY</span><span class="q-tag kw">HAVING</span
+                  ><span class="q-tag kw">ORDER BY</span><span class="q-tag kw">LIMIT</span>
+                </div>
+              </div>
+            </div>
+            <div class="expect-section">
+              <div class="expect-label">期待される結果（一部）</div>
+              <table class="expect-table">
+                <tr>
+                  <th>title</th>
+                  <th>author</th>
+                  <th>comment_count</th>
+                </tr>
+                <tr>
+                  <td>GROUP BY を完全理解</td>
+                  <td>frank</td>
+                  <td>2</td>
+                </tr>
+              </table>
+              <div class="expect-more">… 最大5行（3月以降 + コメント2件以上）</div>
+            </div>
+            <button class="answer-toggle" onclick="toggleAnswer(this)">
+              💡 答えを見る <span class="toggle-arrow">▼</span>
+            </button>
+            <div class="answer-body">
+              <div class="code-block">
+                <div class="code-header">
+                  <div class="dot" style="background: #ff5f57"></div>
+                  <div class="dot" style="background: #febc2e"></div>
+                  <div class="dot" style="background: #28c840"></div>
+                  解答
+                </div>
+                <pre><span class="kw">SELECT</span>   <span class="tbl">posts</span>.<span class="col">title</span>,
+         <span class="tbl">users</span>.<span class="col">username</span>         <span class="kw">AS</span> <span class="col">author</span>,
+         <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>)     <span class="kw">AS</span> <span class="col">comment_count</span>
+<span class="kw">FROM</span>     <span class="tbl">posts</span>
+<span class="kw">JOIN</span>     <span class="tbl">users</span>    <span class="kw">ON</span> <span class="tbl">posts</span>.<span class="col">user_id</span>  <span class="op">=</span> <span class="tbl">users</span>.<span class="col">id</span>
+<span class="kw">LEFT JOIN</span> <span class="tbl">comments</span> <span class="kw">ON</span> <span class="tbl">comments</span>.<span class="col">post_id</span> <span class="op">=</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">WHERE</span>    <span class="tbl">posts</span>.<span class="col">created_at</span> <span class="op">>=</span> <span class="str">'2024-03-01'</span>
+<span class="kw">GROUP BY</span> <span class="tbl">posts</span>.<span class="col">id</span>
+<span class="kw">HAVING</span>   <span class="fn">COUNT</span>(<span class="tbl">comments</span>.<span class="col">id</span>) <span class="op">>=</span> <span class="num">2</span>
+<span class="kw">ORDER BY</span> <span class="col">comment_count</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>    <span class="num">5</span>;</pre>
+              </div>
+              <div class="answer-explain">
+                <div class="explain-title">解説 — 実行順で理解する</div>
+                <div class="explain-list">
+                  <div class="explain-item">
+                    <span class="explain-kw">① FROM+JOIN</span
+                    ><span class="explain-text">posts・users・comments の3テーブルを結合します。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">② WHERE</span
+                    ><span class="explain-text">3月以降の投稿だけを残します。（行単位のフィルタ）</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">③ GROUP BY</span
+                    ><span class="explain-text">投稿 id ごとにグループ化してコメント数を集計します。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">④ HAVING</span
+                    ><span class="explain-text">集計結果のうち、コメントが2件以上あるグループだけを残します。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">⑤ ORDER BY</span
+                    ><span class="explain-text">コメント数が多い順に並べます。</span>
+                  </div>
+                  <div class="explain-item">
+                    <span class="explain-kw">⑥ LIMIT</span><span class="explain-text">上位5件だけ返します。</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      /* 解答トグル */
+      function toggleAnswer(btn) {
+        const body = btn.nextElementSibling;
+        const isOpen = body.classList.contains("open");
+        body.classList.toggle("open", !isOpen);
+        btn.classList.toggle("open", !isOpen);
+
+        /* 進捗更新 */
+        if (!isOpen) {
+          const num = btn.closest(".q-card").querySelector(".q-num");
+          num.classList.add("solved");
+        }
+        updateProgress();
+      }
+
+      function updateProgress() {
+        const total = document.querySelectorAll(".q-card").length;
+        const solved = document.querySelectorAll(".q-num.solved").length;
+        document.getElementById("progress-text").textContent = `${solved} / ${total} 完了`;
+        document.getElementById("progress-fill").style.width = `${(solved / total) * 100}%`;
+      }
+
+      /* テーマ切替 */
+      document.getElementById("themeToggle").addEventListener("change", function () {
+        document.body.classList.toggle("light", this.checked);
+      });
+
+      /* スクロール時のサイドバー連動 */
+      const sections = document.querySelectorAll("[id]");
+      const navLinks = document.querySelectorAll(".sidebar nav a");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              navLinks.forEach((a) => a.classList.remove("active"));
+              const active = document.querySelector(`.sidebar nav a[href="#${e.target.id}"]`);
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-30% 0px -60% 0px" },
+      );
+      sections.forEach((s) => observer.observe(s));
+    </script>
+  </body>
+</html>
